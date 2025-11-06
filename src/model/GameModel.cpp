@@ -2,24 +2,25 @@
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
+#include <fstream>
 
 GameModel::GameModel(int width, int height): 
     _grid(width, height), 
     _player(Position(width / 2, height / 2)),
     _score(0),
-    _gameOver(false) {
+    _gameOver(false),
+    _isPaused(false),
+    _playerName("Player") {
     initializeGame();
     updateGameState();
 }
 
-// начало игры: определение позиции игрока
 void GameModel::initializeGame() {
     if (_grid.isValidPosition(_player.getPosition())) {
         _grid.removeCell(_player.getPosition());
     }
 }
 
-// проверка доступности хода: проверка выхода за границы поля и доступности клетки
 bool GameModel::isValidMove(Position position) const {
     if (!_grid.isValidPosition(position)) {
         return false;
@@ -28,7 +29,6 @@ bool GameModel::isValidMove(Position position) const {
     return cell.isAvailable();
 }
 
-// функция перемещения игрока
 bool GameModel::makeMove(Direction direction) {
     if (_gameOver) {
         return false;
@@ -81,7 +81,6 @@ const std::vector<Position>& GameModel::getAvailableMoves(Direction direction) c
     return empty;
 }
 
-// вычисление позиции по направлению и смещению
 Position GameModel::calculateNewPosition(Position current, Direction direction) const {
     int newX = current.getX(), oldX = current.getX();
     int newY = current.getY(), oldY = current.getY();
@@ -117,7 +116,6 @@ Position GameModel::calculateNewPosition(Position current, Direction direction) 
     return finalPos;
 }
 
-// проверка состояния игры: проверка наличия доступных ходов
 void GameModel::updateGameState() {
     Position playerPos = _player.getPosition();
     bool hasValidMoves = false;
@@ -156,4 +154,109 @@ std::vector<Position> GameModel::makeOver(Position current, Position target) con
     }
     
     return jumpedOver;
+}
+
+void GameModel::setPlayerName(const std::string& name) {
+    _playerName = name;
+}
+
+std::string GameModel::getPlayerName() const {
+    return _playerName;
+}
+
+bool GameModel::saveGame(const std::string& filename) const {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cout << "ERROR: Cannot create save file: " << filename << std::endl;
+        return false;
+    }
+
+    try {
+       
+        file << _score << std::endl;
+        file << _gameOver << std::endl;
+        file << _isPaused << std::endl;
+        file << _playerName << std::endl;
+        
+        Position playerPos = _player.getPosition();
+        file << playerPos.getX() << " " << playerPos.getY() << std::endl;
+        
+        file << _grid.getWidth() << " " << _grid.getHeight() << std::endl;
+        
+        for (int y = 0; y < _grid.getHeight(); y++) {
+            for (int x = 0; x < _grid.getWidth(); x++) {
+                Position pos(x, y);
+                const Cell& cell = _grid.getCell(pos);
+                file << cell.getValue() << " " << static_cast<int>(cell.getColor()) << " " << cell.isAvailable() << " ";
+            }
+            file << std::endl;
+        }
+
+        file.close();
+        std::cout << "Game saved successfully to: " << filename << std::endl;
+        return true;
+    }
+    catch (const std::exception& e) {
+        std::cout << "Error saving game: " << e.what() << std::endl;
+        file.close();
+        return false;
+    }
+}
+
+bool GameModel::loadGame(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cout << "No saved game found at: " << filename << std::endl;
+        return false;
+    }
+
+    try {
+
+        file >> _score;
+        file >> _gameOver;
+        file >> _isPaused;
+        file.ignore();
+        std::getline(file, _playerName);
+        
+        std::cout << "Loaded - Score: " << _score << ", GameOver: " << _gameOver 
+                  << ", Player: " << _playerName << std::endl;
+        
+        int x, y;
+        file >> x >> y;
+        _player.setPosition(Position(x, y));
+        std::cout << "Player position: " << x << ", " << y << std::endl;
+        
+        int width, height;
+        file >> width >> height;
+        std::cout << "Grid size: " << width << "x" << height << std::endl;
+        
+        if (width != _grid.getWidth() || height != _grid.getHeight()) {
+            _grid = Grid(width, height);
+        }
+        
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int value, colorInt;
+                bool available;
+                file >> value >> colorInt >> available;
+                
+                Position pos(x, y);
+                Cell& cell = _grid.getCell(pos);
+                cell.setValue(value);
+                cell.setAvailable(available);
+            }
+        }
+
+        file.close();
+        
+        updateGameState();
+        std::cout << "Game state updated successfully" << std::endl;
+        
+        return true;
+    } 
+    catch (const std::exception& e) {
+        std::cout << "Error loading game: " << e.what() << std::endl;
+        file.close();
+        return false;
+    }
 }

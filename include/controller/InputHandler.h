@@ -3,6 +3,7 @@
 
 #include "core/Directions.h"
 #include <termios.h>
+#include <string>
 
 class InputHandler {
 private:
@@ -19,6 +20,9 @@ public:
     void enableCanonicalMode();
     void disableCanonicalMode();
     Direction getDirectionFromInput();
+    
+    char getCharInput();
+    std::string getStringInput();
 
 private:
     bool isValidDirection(char input) const;

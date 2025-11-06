@@ -29,14 +29,12 @@ std::string ConsoleRenderer::getColorCode(Color color) const {
     return _colorCodes.at(Color::DEFAULT);
 }
 
-// вызывается один раз в конце программы: возвращает терминал в исходное состояние
 void ConsoleRenderer::clearScreen() const {
     if (system("clear")) {
         std::cout << "\033[2J\033[1;1H";
     }
 }
 
-// всопомогательный метода: рисует клетку
 void ConsoleRenderer::drawCell(const Cell& cell, bool isPlayer, bool isAvailableMove) const {
     std::string resetCode = _colorCodes.at(Color::DEFAULT);
     std::cout << resetCode;
@@ -58,7 +56,6 @@ void ConsoleRenderer::drawCell(const Cell& cell, bool isPlayer, bool isAvailable
     std::cout << resetCode;
 }
 
-//основной метод рендеринга: отображение игрового поля с подсветкой доступных ходов
 void ConsoleRenderer::drawGrid(const Grid& grid, const Position& playerPosition, const std::vector<Position>& availableMoves) const {
     int width = grid.getWidth();
     int height = grid.getHeight();
@@ -87,8 +84,65 @@ void ConsoleRenderer::drawGrid(const Grid& grid, const Position& playerPosition,
     }
 }
 
-void ConsoleRenderer::displayWelcomeScreen() const {}
-void ConsoleRenderer::displayGameOver() const {}
-void ConsoleRenderer::drawScore(int score) const {}
+void ConsoleRenderer::displayMenu(const std::vector<std::string>& menuItems, int selectedIndex, const std::string& playerName) const {
+    clearScreen();
+    
+    // Получаем размеры терминала
+    int terminalHeight = 25;
+    int terminalWidth = 80;
+    
+    // Вычисляем вертикальный отступ для центрирования
+    int totalMenuHeight = menuItems.size() + 6;
+    int verticalPadding = (terminalHeight - totalMenuHeight) / 2;
+    
+    // Выводим пустые строки для вертикального центрирования
+    for (int i = 0; i < verticalPadding; i++) {
+        std::cout << std::endl;
+    }
+    
+    // Горизонтальное центрирование заголовка
+    std::string title = "=== GAME MENU ===";
+    int titlePadding = (terminalWidth - title.length()) / 2;
+    std::cout << std::string(titlePadding, ' ') << "\033[1;36m" << title << "\033[0m" << std::endl;
+    
+    // Информация о игроке
+    std::string playerInfo = "Player: " + playerName;
+    int playerPadding = (terminalWidth - playerInfo.length()) / 2;
+    std::cout << std::string(playerPadding, ' ') << playerInfo << std::endl << std::endl;
+    
+    // Выводим пункты меню
+    for (int i = 0; i < menuItems.size(); i++) {
+        std::string menuItem = menuItems[i];
+        int itemPadding = (terminalWidth - menuItem.length() - 4) / 2;
+        
+        std::cout << std::string(itemPadding, ' ');
+        
+        if (i == selectedIndex) {
+            std::cout << "\033[1;32m> " << menuItem << " <\033[0m";
+        } else {
+            std::cout << "  " << menuItem << "  ";
+        }
+        std::cout << std::endl;
+    }
+    
+    std::cout << std::endl;
+    
+    // Подсказка
+    std::string hint = "Use UP/DOWN arrows to navigate, ENTER to select";
+    int hintPadding = (terminalWidth - hint.length()) / 2;
+    std::cout << std::string(hintPadding, ' ') << "\033[3m" << hint << "\033[0m" << std::endl;
+}
 
+void ConsoleRenderer::drawScore(int score) const {
+    std::cout << "Score: " << score << std::endl;
+}
 
+void ConsoleRenderer::displayWelcomeScreen() const {
+    clearScreen();
+    std::cout << "\033[1;36m" << "=== WELCOME TO THE GAME ===" << "\033[0m" << std::endl;
+}
+
+void ConsoleRenderer::displayGameOver() const {
+    clearScreen();
+    std::cout << "\033[1;31m" << "=== GAME OVER ===" << "\033[0m" << std::endl;
+}

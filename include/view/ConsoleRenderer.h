@@ -9,7 +9,6 @@
 #include <vector>
 #include <map>
 
-
 class ConsoleRenderer {
 private:
     std::map<Color, std::string> _colorCodes;
@@ -28,6 +27,7 @@ public:
     void drawScore(int score) const;
     void displayWelcomeScreen() const;
     void displayGameOver() const;
+    void displayMenu(const std::vector<std::string>& menuItems, int selectedIndex, const std::string& playerName) const;
     void clearScreen() const;
 
     std::string getColorCode(Color color) const;

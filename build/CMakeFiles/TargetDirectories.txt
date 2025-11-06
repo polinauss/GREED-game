@@ -1,0 +1,4 @@
+/home/vboxuser/game/build/CMakeFiles/greed_game.dir
+/home/vboxuser/game/build/CMakeFiles/run.dir
+/home/vboxuser/game/build/CMakeFiles/edit_cache.dir
+/home/vboxuser/game/build/CMakeFiles/rebuild_cache.dir

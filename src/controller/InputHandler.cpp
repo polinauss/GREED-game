@@ -1,6 +1,7 @@
 #include "controller/InputHandler.h"
 #include <unistd.h>
 #include <cstdio>
+#include <iostream>
 
 InputHandler::InputHandler(): _isNonCanonicalMode(false) {
     tcgetattr(STDIN_FILENO, &_originalTermios);
@@ -105,4 +106,27 @@ Direction InputHandler::convertToDirection(char input) const {
         default:
             return Direction::NONE;
     }
+}
+
+char InputHandler::getCharInput() {
+    if (!_isNonCanonicalMode) {
+        enableCanonicalMode();
+    }
+
+    char input;
+    ssize_t bytesRead = read(STDIN_FILENO, &input, 1);
+    if (bytesRead > 0) {
+        return input;
+    }
+    return '\0';
+}
+
+std::string InputHandler::getStringInput() {
+    disableCanonicalMode();
+    
+    std::string input;
+    std::getline(std::cin, input);
+    
+    enableCanonicalMode();
+    return input;
 }

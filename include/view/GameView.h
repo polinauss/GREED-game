@@ -6,6 +6,7 @@
 #include "model/Position.h"
 #include <memory>
 #include <vector>
+#include <string>
 
 class GameView {
 private:
@@ -19,6 +20,7 @@ public:
     void renderGameState(Direction moveDirection);
     void displayGameOver();
     void displayWelcomeScreen();
+    void displayMenu(const std::vector<std::string>& menuItems, int selectedIndex);
     void showHelp();
 
 private:

@@ -7,6 +7,7 @@
 #include "core/Directions.h"
 #include <vector>
 #include <map>
+#include <string>
 
 class GameModel {
 private:
@@ -14,7 +15,9 @@ private:
     Player _player;
     int _score;
     bool _gameOver;
+    bool _isPaused;
     std::map<Direction, std::vector<Position>> _availableMoves;
+    std::string _playerName;
 
 public:
     GameModel(int width=10, int height=10);
@@ -24,11 +27,19 @@ public:
     bool isValidMove(Position position) const;
     bool makeMove(Direction direction);
     bool isGameOver() const;
+    bool isPaused() const { return _isPaused; }
+    void togglePause() { _isPaused = !_isPaused; }
     int getScore() const;
     Grid& getGrid();
     const Grid& getGrid() const;
     const std::vector<Position>& getAvailableMoves(Direction direction) const;
     Position getPlayerPosition() const;
+    
+
+    bool saveGame(const std::string& filename) const;
+    bool loadGame(const std::string& filename);
+    void setPlayerName(const std::string& name);
+    std::string getPlayerName() const;
 
 private:
     Position calculateNewPosition(Position current, Direction direction) const;
