@@ -1,6 +1,8 @@
 #include "controller/GameController.h"
 #include <iostream>
 #include <unistd.h>
+#include <iomanip>
+#include <fstream>
 
 GameController::GameController(GameModel* model, GameView* view): 
     _model(model), _view(view), _gameRunning(false), _saveFileName("savegame.dat") {
@@ -18,6 +20,8 @@ void GameController::showMenu() {
         "Load Game", 
         "Save Game",
         "Set Player Name",
+        "Leaderboard",
+        "Force Update Leaderboard",
         "Exit"
     };
     
@@ -46,7 +50,7 @@ void GameController::handleMenuInput(const std::vector<std::string>& menuItems, 
     } else if (input == '\n') {
         switch (selectedIndex) {
             case 0:
-                _model->initializeGame();
+                _model->resetGame();
                 _view->renderGameState(Direction::NONE);
                 processInput();
                 break;
@@ -64,10 +68,60 @@ void GameController::handleMenuInput(const std::vector<std::string>& menuItems, 
                 setPlayerName();
                 break;
             case 4:
+                showLeaderboard();
+                break;
+            case 5:
+                std::cout << "Forcing leaderboard update..." << std::endl;
+                _model->updatePlayerScore();
+                sleep(2);
+                break;
+            case 6:
                 _gameRunning = false;
                 break;
         }
     }
+}
+
+void GameController::showLeaderboard() {
+    std::cout << "=== SHOWING LEADERBOARD ===" << std::endl;
+    
+    _model->loadLeaderboard();
+    auto leaderboard = _model->getLeaderboard();
+    
+    _inputHandler->disableCanonicalMode();
+    
+    std::cout << "\033[2J\033[1;1H";
+    std::cout << "\033[1;36m" << "=== LEADERBOARD ===" << "\033[0m" << std::endl;
+    std::cout << std::endl;
+    
+    if (leaderboard.empty()) {
+        std::cout << "No records yet! Be the first to play!" << std::endl;
+        std::cout << "DEBUG: leaderboard vector size = " << leaderboard.size() << std::endl;
+        
+        std::ifstream file("leaderboard.dat");
+        if (file.is_open()) {
+            std::cout << "leaderboard.dat exists but is empty or cannot be read" << std::endl;
+            file.close();
+        } else {
+            std::cout << "leaderboard.dat does not exist" << std::endl;
+        }
+    } else {
+        std::cout << std::setw(4) << "Rank" << std::setw(20) << "Player" << std::setw(10) << "Score" << std::endl;
+        std::cout << std::string(34, '-') << std::endl;
+        
+        for (size_t i = 0; i < leaderboard.size() && i < 10; ++i) {
+            const auto& record = leaderboard[i];
+            std::cout << std::setw(4) << (i + 1) 
+                      << std::setw(20) << record.name 
+                      << std::setw(10) << record.bestScore << std::endl;
+        }
+    }
+    
+    std::cout << std::endl;
+    std::cout << "Press any key to return to menu..." << std::endl;
+    
+    _inputHandler->getCharInput();
+    _inputHandler->enableCanonicalMode();
 }
 
 void GameController::setPlayerName() {
@@ -133,6 +187,14 @@ void GameController::processInput() {
                     previewDirection = Direction::NONE;
                     
                     saveGame();
+                        
+                    if (_model->isGameOver()) {
+                        std::cout << "=== GAME OVER AFTER MOVE ===" << std::endl;
+                        _view->displayGameOver();
+                        _model->updatePlayerScore();
+                        sleep(3);
+                        break;
+                    }
                 }
             }
             else if (input == ' ') {
@@ -140,8 +202,10 @@ void GameController::processInput() {
             }
             else if (input == 'q' || input == 'Q') {
 
-                std::cout << "Saving game and returning to menu..." << std::endl;
+                std::cout << "Quitting to menu..." << std::endl;
                 saveGame();
+                std::cout << "Updating leaderboard before quit..." << std::endl;
+                _model->updatePlayerScore();
                 sleep(1);
                 break;
             }
@@ -161,7 +225,12 @@ void GameController::processInput() {
         }
         
         if (_model->isGameOver()) {
+            std::cout << "=== GAME OVER DETECTED IN MAIN LOOP ===" << std::endl;
             _view->displayGameOver();
+            
+            std::cout << "Final score: " << _model->getScore() << std::endl;
+            
+            _model->updatePlayerScore();
             
             saveGame();
             sleep(3);
@@ -170,9 +239,12 @@ void GameController::processInput() {
     }
 }
 
+
 void GameController::handleMove(Direction direction) {
     if (!_model->makeMove(direction)) {
         std::cout << "Invalid move!" << std::endl;
         sleep(1);
+        return;
     }
+    std::cout << "Move successful. Current score: " << _model->getScore() << std::endl;
 }

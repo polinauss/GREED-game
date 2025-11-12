@@ -32,7 +32,6 @@ const Cell& Grid::getCell(Position position) const {
     return _cells[position.getY() * _width + position.getX()];
 }
 
-
 bool Grid::isValidPosition(Position position) const {
     return 
         position.getX() < _width &&

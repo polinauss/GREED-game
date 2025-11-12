@@ -3,6 +3,9 @@
 #include <ctime>
 #include <cstdlib>
 #include <fstream>
+#include <algorithm>
+#include <sstream>
+#include <filesystem>
 
 GameModel::GameModel(int width, int height): 
     _grid(width, height), 
@@ -10,9 +13,12 @@ GameModel::GameModel(int width, int height):
     _score(0),
     _gameOver(false),
     _isPaused(false),
-    _playerName("Player") {
+    _playerName("Player"),
+    _initialWidth(width),
+    _initialHeight(height){
     initializeGame();
     updateGameState();
+    loadLeaderboard();
 }
 
 void GameModel::initializeGame() {
@@ -28,6 +34,20 @@ bool GameModel::isValidMove(Position position) const {
     const Cell& cell = _grid.getCell(position);
     return cell.isAvailable();
 }
+
+void GameModel::resetGame() {
+    _score = 0;
+    _gameOver = false;
+    _isPaused = false;
+    _availableMoves.clear();
+    _grid = Grid(_initialWidth, _initialHeight);
+    
+    _player.setPosition(Position(_initialWidth / 2, _initialHeight / 2));
+    
+    initializeGame();
+    updateGameState();
+}
+
 
 bool GameModel::makeMove(Direction direction) {
     if (_gameOver) {
@@ -134,6 +154,11 @@ void GameModel::updateGameState() {
 
     _availableMoves[Direction::NONE] = {};
     _gameOver = !hasValidMoves;
+    
+    std::cout << "updateGameState: hasValidMoves = " << hasValidMoves << ", _gameOver = " << _gameOver << std::endl;
+    if (!hasValidMoves) {
+        std::cout << "=== NO VALID MOVES DETECTED - GAME SHOULD END ===" << std::endl;
+    }
 }
 
 std::vector<Position> GameModel::makeOver(Position current, Position target) const {
@@ -193,6 +218,8 @@ bool GameModel::saveGame(const std::string& filename) const {
         }
 
         file.close();
+        
+        const_cast<GameModel*>(this)->saveLeaderboard();
         std::cout << "Game saved successfully to: " << filename << std::endl;
         return true;
     }
@@ -260,3 +287,96 @@ bool GameModel::loadGame(const std::string& filename) {
         return false;
     }
 }
+
+void GameModel::loadLeaderboard() {
+    std::ifstream file(_leaderboardFile);
+    if (!file.is_open()) {
+        std::cout << "No existing leaderboard found. Creating new one." << std::endl;
+        return;
+    }
+
+    try {
+        _leaderboard.clear();
+        std::string line;
+        while (std::getline(file, line)) {
+            std::istringstream iss(line);
+            std::string name;
+            int score;
+            if (iss >> name >> score) {
+                _leaderboard.emplace_back(name, score);
+                std::cout << "Loaded record: " << name << " - " << score << std::endl;
+            }
+        }
+        file.close();
+
+        std::sort(_leaderboard.begin(), _leaderboard.end(), 
+            [](const PlayerRecord& a, const PlayerRecord& b) {
+                return a.bestScore > b.bestScore;
+            });
+            
+        std::cout << "Leaderboard loaded with " << _leaderboard.size() << " records" << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cout << "Error loading leaderboard: " << e.what() << std::endl;
+    }
+}
+
+void GameModel::saveLeaderboard() {
+    std::ofstream file(_leaderboardFile);
+    if (!file.is_open()) {
+        std::cout << "ERROR: Cannot create leaderboard file: " << _leaderboardFile << std::endl;
+        return;
+    }
+
+    try {
+        for (const auto& record : _leaderboard) {
+            file << record.name << " " << record.bestScore << std::endl;
+            std::cout << "Saved record: " << record.name << " - " << record.bestScore << std::endl;
+        }
+        file.close();
+        std::cout << "Leaderboard saved successfully" << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cout << "Error saving leaderboard: " << e.what() << std::endl;
+    }
+}
+
+void GameModel::updatePlayerScore() {
+    std::cout << "=== updatePlayerScore called ===" << std::endl;
+    std::cout << "Current score: " << _score << std::endl;
+    std::cout << "Player name: " << _playerName << std::endl;
+    
+
+    auto it = std::find_if(_leaderboard.begin(), _leaderboard.end(),
+        [this](const PlayerRecord& record) {
+            return record.name == _playerName;
+        });
+    
+    if (it != _leaderboard.end()) {
+        std::cout << "Found existing player in leaderboard. Old score: " << it->bestScore << ", New score: " << _score << std::endl;
+        
+        if (_score > it->bestScore) {
+            it->bestScore = _score;
+            std::cout << "Updating to new high score!" << std::endl;
+        } else {
+            std::cout << "Existing score is better, keeping old score." << std::endl;
+        }
+    } else {
+        std::cout << "Adding new player to leaderboard." << std::endl;
+        _leaderboard.emplace_back(_playerName, _score);
+    }
+    
+    std::sort(_leaderboard.begin(), _leaderboard.end(), 
+        [](const PlayerRecord& a, const PlayerRecord& b) {
+            return a.bestScore > b.bestScore;
+        });
+    
+    std::cout << "Leaderboard now has " << _leaderboard.size() << " records" << std::endl;
+    saveLeaderboard();
+    std::cout << "=== updatePlayerScore finished ===" << std::endl;
+}
+
+std::vector<PlayerRecord> GameModel::getLeaderboard() const {
+    return _leaderboard;
+}
+

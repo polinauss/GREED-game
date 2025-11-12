@@ -9,6 +9,14 @@
 #include <map>
 #include <string>
 
+struct PlayerRecord {
+    std::string name;
+    int bestScore;
+    
+    PlayerRecord(const std::string& playerName = "", int score = 0) 
+        : name(playerName), bestScore(score) {}
+};
+
 class GameModel {
 private:
     Grid _grid;
@@ -18,12 +26,19 @@ private:
     bool _isPaused;
     std::map<Direction, std::vector<Position>> _availableMoves;
     std::string _playerName;
+    
+    std::vector<PlayerRecord> _leaderboard;
+    std::string _leaderboardFile = "leaderboard.dat";
+    
+    int _initialWidth;
+    int _initialHeight;
 
 public:
     GameModel(int width=10, int height=10);
     ~GameModel() = default;
 
     void initializeGame();
+    void resetGame(); 
     bool isValidMove(Position position) const;
     bool makeMove(Direction direction);
     bool isGameOver() const;
@@ -35,6 +50,10 @@ public:
     const std::vector<Position>& getAvailableMoves(Direction direction) const;
     Position getPlayerPosition() const;
     
+    void loadLeaderboard();
+    void saveLeaderboard();
+    void updatePlayerScore();
+    std::vector<PlayerRecord> getLeaderboard() const;
 
     bool saveGame(const std::string& filename) const;
     bool loadGame(const std::string& filename);

@@ -27,6 +27,7 @@ public:
     bool loadGame();
     void saveGame();
     void setPlayerName();
+    void showLeaderboard();
 
 private:
     void handleMenuInput(const std::vector<std::string>& menuItems, int& selectedIndex);
