@@ -1,7 +1,6 @@
 #include "controller/InputHandler.h"
 #include <unistd.h>
 #include <cstdio>
-#include <iostream>
 
 InputHandler::InputHandler(): _isNonCanonicalMode(false) {
     tcgetattr(STDIN_FILENO, &_originalTermios);
@@ -61,11 +60,7 @@ bool InputHandler::isValidDirection(char input) const {
     return input == 'w' || input == 'W' || 
            input == 's' || input == 'S' || 
            input == 'a' || input == 'A' || 
-           input == 'd' || input == 'D' ||
-           input == 'ц' || input == 'Ц' || 
-           input == 'ы' || input == 'Ы' || 
-           input == 'ф' || input == 'Ф' || 
-           input == 'в' || input == 'В' ;
+           input == 'd' || input == 'D';
 }
 
 bool InputHandler::handleEscapeSequence(Direction& result) const {
@@ -95,38 +90,13 @@ bool InputHandler::handleEscapeSequence(Direction& result) const {
 
 Direction InputHandler::convertToDirection(char input) const {
     switch (input) {
-        case 'w': case 'W': case 'ц': case 'Ц':
+        case 'w': case 'W':
             return Direction::UP;
-        case 'a': case 'A': case 'ф': case 'Ф':
+        case 'a': case 'A':
             return Direction::LEFT;
-        case 's': case 'S': case 'ы': case 'Ы':
+        case 's': case 'S':
             return Direction::DOWN;
-        case 'd': case 'D': case 'в': case 'В':
+        case 'd': case 'D':
             return Direction::RIGHT;
-        default:
-            return Direction::NONE;
     }
-}
-
-char InputHandler::getCharInput() {
-    if (!_isNonCanonicalMode) {
-        enableCanonicalMode();
-    }
-
-    char input;
-    ssize_t bytesRead = read(STDIN_FILENO, &input, 1);
-    if (bytesRead > 0) {
-        return input;
-    }
-    return '\0';
-}
-
-std::string InputHandler::getStringInput() {
-    disableCanonicalMode();
-    
-    std::string input;
-    std::getline(std::cin, input);
-    
-    enableCanonicalMode();
-    return input;
 }

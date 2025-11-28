@@ -4,35 +4,40 @@
 #include <cstdlib>
 
 Grid::Grid(int width, int height): _width(width), _height(height) {
-    InitializeRandom();
+    initializeRandom();
 }
 
-void Grid::InitializeRandom() {
+Grid::~Grid() {
+    clearCells();
+}
+
+void Grid::clearCells() {
+    for (ICell* cell: _cells) 
+        delete cell;
+
     _cells.clear();
-    _cells.reserve(_height * _width);
-    
-    for (int i = 0; i < _height * _width; ++i) {
-        int value = rand() % 9 + 1;
-        Color color = gameColors[rand() % gameColors.size()];
-        _cells.emplace_back(value, color);
-    }
 }
 
-Cell& Grid::getCell(Position position) {
+void Grid::initializeRandom() {
+    clearCells();
+    _cells = _generator.generateRandomGrid(_width, _height);
+}
+
+ICell& Grid::operator[] (const Position& position) {
     if (!isValidPosition(position)) {
-        throw std::out_of_range("Position out of range | Grid::getCell");
+        throw std::out_of_range("Position out of range | Grid::operator[]");
     }
-    return _cells[position.getY() * _width + position.getX()];
+    return *_cells[position.getY() * _width + position.getX()];
 }
 
-const Cell& Grid::getCell(Position position) const {
+const ICell& Grid::operator[] (const Position& position) const {
     if (!isValidPosition(position)) {
-        throw std::out_of_range("Position out of range | Grid::getCell");
+        throw std::out_of_range("Position out of range | Grid::operator[]");
     }
-    return _cells[position.getY() * _width + position.getX()];
+    return *_cells[position.getY() * _width + position.getX()];
 }
 
-bool Grid::isValidPosition(Position position) const {
+bool Grid::isValidPosition(const Position& position) const {
     return 
         position.getX() < _width &&
         position.getX() >= 0 &&
@@ -40,11 +45,11 @@ bool Grid::isValidPosition(Position position) const {
         position.getY() >= 0;
 }
 
-void Grid::removeCell(Position position) {
+void Grid::removeCell(const Position& position) {
     if (!isValidPosition(position)) {
-        throw std::out_of_range("Position out of range | Grid::removeCell");
+        throw std::out_of_range("Position out of range | Grid::removeCell()");
     }
-    _cells[position.getY() * _width + position.getX()].setAvailable(false);
+    (*this)[position].setAvailable(false);
 }
 
 int Grid::getWidth() const {

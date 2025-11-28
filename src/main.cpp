@@ -7,23 +7,18 @@
 #include <ctime>
 #include <cstdlib>
 
-void getTerminalSize(int& width, int& height) {
-    struct winsize w;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    
-    width = w.ws_col;
-    height = w.ws_row;
-}
 int main() {
-    srand(time(NULL));
-    int width, height;
-    getTerminalSize(width, height);
+    try {
+        GameModel gameModel;
+        GameView gameView(&gameModel);
+        GameController gameController(&gameModel, &gameView);
 
-    GameModel gameModel(width, height);
-    GameView gameView(&gameModel);
-    GameController gameController(&gameModel, &gameView);
+        gameController.startGame();
 
-    gameController.startGame();
+    } catch (std::exception& e) {
+        std::cerr << "Error:" << e.what() << std::endl;
+        return 1;
+    }
 
     return 0;
 }

@@ -2,27 +2,33 @@
 #define GRID
 
 #include "core/Color.h"
-#include "model/Cell.h"
+#include "model/CellGenerator.h"
+#include "interfaces/ICell.h"
 #include "model/Position.h"
 #include <vector>
 
 class Grid {
 private:
-    std::vector<Cell> _cells;
+    std::vector<ICell*> _cells;
     int _width;
     int _height;
+    CellGenerator _generator;
 
 public:
     Grid(int width, int height);
-    ~Grid() = default;
+    ~Grid();
 
-    void InitializeRandom();
-    Cell& getCell(Position position);
-    const Cell& getCell(Position position) const;
-    bool isValidPosition(Position position) const;
-    void removeCell(Position position);
+    void initializeRandom();
+
+    ICell& operator[] (const Position& position);
+    const ICell& operator[] (const Position& position) const;
+    bool isValidPosition(const Position& position) const;
+    void removeCell(const Position& position);
     int getWidth() const;
     int getHeight() const;
+
+private:
+    void clearCells();
 };
 
 #endif
