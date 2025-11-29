@@ -21,6 +21,13 @@ void ConsoleRenderer::initializeColorCodes() {
     _colorCodes[Color::DEFAULT] = "\033[0m";
     _colorCodes[Color::BLUEHIGHLIGHT] = "\033[44;37m";
     _colorCodes[Color::REDHIGHLIGHT] = "\033[41m";
+    _colorCodes[Color::WHITEBACKGROUND] = "\033[47m";
+}
+
+void ConsoleRenderer::fillScreenWithWhite() const {
+    std::cout << "\033[47m";
+    std::cout << "\033[2J";
+    std::cout.flush();
 }
 
 std::string ConsoleRenderer::getColorCode(Color color) const {
@@ -51,6 +58,9 @@ void ConsoleRenderer::drawBasicCell(const BasicCell& cell, const Position& pos, 
     if (highlightColor != Color::DEFAULT) {
         std::cout << _colorCodes.at(highlightColor);
     }
+    else {
+        std::cout << _colorCodes.at(Color::WHITEBACKGROUND);
+    }
 
     if (cell.isAvailable()) {
         std::string colorCode = _colorCodes.at(cell.getColor());
@@ -64,8 +74,42 @@ void ConsoleRenderer::drawBasicCell(const BasicCell& cell, const Position& pos, 
 
 void ConsoleRenderer::drawStartingState(const Grid& grid) {
     hideCursor();
+    fillScreenWithWhite();
+    
     int gridWidth = grid.getWidth();
     int gridHeight = grid.getHeight();
+
+
+
+
+    std::string blueColor = _colorCodes.at(Color::BLUEHIGHLIGHT);
+    std::string resetColor = _colorCodes.at(Color::DEFAULT);
+
+    for (int x = -1; x <= gridWidth; x++) {
+
+        moveCursor(_offset + Position(x, -1));
+        std::cout << blueColor << " " << resetColor;
+
+        moveCursor(_offset + Position(x, gridHeight));
+        std::cout << blueColor << " " << resetColor;
+    }
+
+    for (int y = 0; y < gridHeight; y++) {
+        moveCursor(_offset + Position(-1, y));
+        std::cout << blueColor << " " << resetColor;
+
+        moveCursor(_offset + Position(gridWidth, y));
+        std::cout << blueColor << " " << resetColor;
+    }
+    
+    for (int row = 0; row < gridHeight; row++) {
+        for (int col = 0; col < gridWidth; col++) {
+            const Position& cellPos = Position(col, row);
+            const ICell& cell = grid[cellPos];
+            cell.acceptRender(*this, cellPos + _offset, Color::WHITEBACKGROUND);
+        }
+    }
+
 
     for (int row = 0; row < gridHeight; row++) {
         for (int col = 0; col < gridWidth; col++) {
@@ -111,6 +155,25 @@ void ConsoleRenderer::highlightGameOverState(const Grid& grid) {
     int gridHeight = grid.getHeight();
 
     std::cout << "\033[s";
+
+    std::string blueColor = _colorCodes.at(Color::BLUEHIGHLIGHT);
+    std::string resetColor = _colorCodes.at(Color::DEFAULT);
+
+    for (int x = -1; x <= gridWidth; x++) {
+        moveCursor(_offset + Position(x, -1));
+        std::cout << blueColor << " " << resetColor;
+        
+        moveCursor(_offset + Position(x, gridHeight));
+        std::cout << blueColor << " " << resetColor;
+    }
+
+    for (int y = 0; y < gridHeight; y++) {
+        moveCursor(_offset + Position(-1, y));
+        std::cout << blueColor << " " << resetColor;
+        
+        moveCursor(_offset + Position(gridWidth, y));
+        std::cout << blueColor << " " << resetColor;
+    }
     
     for (int row = 0; row < gridHeight; row++) {
         for (int col = 0; col < gridWidth; col++) {
@@ -120,16 +183,14 @@ void ConsoleRenderer::highlightGameOverState(const Grid& grid) {
             if (cell.isAvailable()) {
                 cell.acceptRender(*this, cellPos + _offset, Color::REDHIGHLIGHT);
             } else {
-                cell.acceptRender(*this, cellPos + _offset);
+                cell.acceptRender(*this, cellPos + _offset, Color::WHITEBACKGROUND);
             }
         }
     }   
 }
 
 void ConsoleRenderer::clearScreen() const {
-    if (system("clear")) {
-        std::cout << "\033[2J\033[1;1H";
-    }
+    fillScreenWithWhite();
 }
 
 void ConsoleRenderer::resetCursor() const {
@@ -139,7 +200,9 @@ void ConsoleRenderer::resetCursor() const {
 }
 
 void ConsoleRenderer::drawScore(int score) const {
+    std::cout << _colorCodes.at(Color::WHITEBACKGROUND);
     std::cout << "Score: " << score << std::endl;
+    std::cout << _colorCodes.at(Color::DEFAULT);
 }
 
 void ConsoleRenderer::displayWelcomeScreen() const {

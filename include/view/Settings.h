@@ -12,7 +12,7 @@ private:
     int _minHeight;
 
 public:
-    Settings(int width = 200, int height = 55);
+    Settings(int width = 72, int height = 27);
     ~Settings() = default;
 
     void updateTerminalSize();

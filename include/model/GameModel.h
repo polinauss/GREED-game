@@ -22,7 +22,7 @@ private:
     InteractionHandler _interactionHandler;
 
 public:
-    GameModel(int width=200, int height=55);
+    GameModel(int width=70, int height=25);
     ~GameModel() = default;
 
     friend class InteractionHandler;

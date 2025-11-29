@@ -13,7 +13,8 @@ enum class Color {
     WHITE,
     DEFAULT,
     BLUEHIGHLIGHT,
-    REDHIGHLIGHT
+    REDHIGHLIGHT,
+    WHITEBACKGROUND
 };
 
 inline const std::vector<Color> gameColors = {

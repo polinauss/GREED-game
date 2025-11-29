@@ -47,6 +47,7 @@ private:
     void moveCursor(const Position& pos) const;
     void hideCursor() const;
     void showCursor() const;
+    void fillScreenWithWhite() const;
 
 };
 
