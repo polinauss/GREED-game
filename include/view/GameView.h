@@ -28,8 +28,13 @@ public:
     void highlightGameOver();
     void displayGameOver();
     void displayWelcomeScreen();
-    void displayMenu(const std::vector<std::string>& menuItems, int selectedIndex);
+    
+    void clearScreen();
+    
+    void displayMenu(const std::vector<std::string>& menuItems, int selectedIndex, const std::string& playerName);
     void showHelp();
+    void showLeaderboard(const std::vector<std::pair<std::string, int>>& leaders);
+    void showNameInput();
 
 };
 

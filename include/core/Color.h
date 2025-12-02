@@ -14,12 +14,20 @@ enum class Color {
     DEFAULT,
     BLUEHIGHLIGHT,
     REDHIGHLIGHT,
-    WHITEBACKGROUND
+    WHITEBACKGROUND,
+    BLACK,
+    GRAY,
+    DARK_GRAY
 };
 
 inline const std::vector<Color> gameColors = {
-    Color::RED, Color::GREEN, Color::BLUE, 
-    Color::YELLOW, Color::CYAN, Color::MAGENTA
+    Color::RED,
+    Color::GREEN, 
+    Color::BLUE,
+    Color::YELLOW,
+    Color::CYAN,
+    Color::MAGENTA,
+    Color::WHITE
 };
 
 #endif

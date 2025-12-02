@@ -38,6 +38,9 @@ public:
     const std::vector<Position>& getAffectedElements() const;
     std::vector<std::pair<bool, Position>>& getAvailableMoves();
 
+    void setPlayerPosition(Position position);
+    void setScore(int score);
+
 private:
     void updateGameState();
 };

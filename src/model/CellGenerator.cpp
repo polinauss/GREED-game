@@ -4,8 +4,6 @@
 #include <cstdlib>
 
 std::vector<ICell*> CellGenerator::generateRandomGrid(int width, int height) {
-    srand(time(NULL));
-
     std::vector<ICell*> grid;
     grid.reserve(width * height);
 
@@ -21,7 +19,7 @@ ICell* CellGenerator::createBasicCell(int value, Color color) {
 }
 
 ICell* CellGenerator::createRandomCell() {
-    int value = rand() % 9 + 1;
+    int value = rand() % 5 + 1;
     Color color = gameColors[rand() % gameColors.size()];
     return new BasicCell(value, color);
 }

@@ -13,14 +13,15 @@ GameView::GameView(GameModel* model): _model(model) {
 }
 
 void GameView::renderStatringState() {
-    _renderer->clearScreen();
     _renderer->drawStartingState(_model->getGrid());
     _renderer->drawPlayer(_model->getPlayerPosition());
+    _renderer->drawScore(_model->getScore());
 }
 
 void GameView::renderMove() {
     _renderer->drawMove(_model->getGrid(), _model->getAffectedElements());
     _renderer->drawPlayer(_model->getPlayerPosition());
+    _renderer->drawScore(_model->getScore());
 }
 
 void GameView::highlightMoveDirection(std::vector<std::pair<bool, Position>>& availableMoves, Direction direction) {
@@ -30,7 +31,7 @@ void GameView::highlightMoveDirection(std::vector<std::pair<bool, Position>>& av
 void GameView::highlightGameOver() {
     _renderer->highlightGameOverState(_model->getGrid());
     _renderer->drawPlayer(_model->getPlayerPosition());
-    _renderer->resetCursor(); //delete later
+    _renderer->resetCursor();
 }
 
 void GameView::renderScore() {
@@ -46,6 +47,27 @@ void GameView::displayWelcomeScreen() {
     _renderer->displayWelcomeScreen();
 }
 
-void GameView::displayMenu(const std::vector<std::string>& menuItems, int selectedIndex) {}
 
-void GameView::showHelp() {}
+void GameView::clearScreen() {
+    _renderer->clearScreen();
+}
+
+void GameView::displayMenu(const std::vector<std::string>& menuItems, int selectedIndex, const std::string& playerName) {
+    _renderer->displayMenu(menuItems, selectedIndex, playerName);
+}
+
+void GameView::showHelp() {
+    _renderer->showRules();
+}
+
+void GameView::showLeaderboard(const std::vector<std::pair<std::string, int>>& leaders) {
+    _renderer->showLeaderboard(leaders);
+}
+
+void GameView::showNameInput() {
+    _renderer->showNameInput();
+}
+
+void GameView::displayOffset() {
+    
+}

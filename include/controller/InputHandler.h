@@ -7,24 +7,18 @@
 class InputHandler {
 private:
     struct termios _originalTermios;
-    bool _isNonCanonicalMode;
-
+    
 public:
     InputHandler();
     ~InputHandler();
-
-    InputHandler(const InputHandler&) = delete;
-    InputHandler& operator=(const InputHandler&) = delete;
-
-    void enableCanonicalMode();
-    void disableCanonicalMode();
+    
+    void restoreTerminal();
+    void setupGameMode();
+    void setupMenuMode();
+    
+    char getMenuInput();
+    char getAnyKey();
     Direction getDirectionFromInput();
-
-private:
-    bool isValidDirection(char input) const;
-    Direction convertToDirection(char input) const;
-    bool handleEscapeSequence(Direction& result) const;
 };
-
 
 #endif

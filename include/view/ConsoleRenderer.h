@@ -22,9 +22,10 @@ private:
     Position _offset;
 
 public:
+
     ConsoleRenderer(Position offset);
     ~ConsoleRenderer() = default;
-
+    
     void drawBasicCell(const BasicCell& cell, const Position& pos, Color highlightColor = Color::DEFAULT) const override;
 
     void drawStartingState(const Grid& grid);
@@ -40,6 +41,10 @@ public:
     void displayWelcomeScreen() const;
     void displayGameOver() const;
     void displayMenu(const std::vector<std::string>& menuItems, int selectedIndex, const std::string& playerName) const;
+    void showRules() const;
+    void showLeaderboard(const std::vector<std::pair<std::string, int>>& leaders) const;
+    void showNameInput() const;
+    void displayLoadGameScreen() const;
 
 private:
     void initializeColorCodes();
@@ -47,7 +52,12 @@ private:
     void moveCursor(const Position& pos) const;
     void hideCursor() const;
     void showCursor() const;
-    void fillScreenWithWhite() const;
+  
+    void fillScreenWithColor(Color color) const;
+    void drawGameInfo(const std::string& playerName, int score) const;
+    void drawBlackBorder(int gridWidth, int gridHeight) const;
+    void drawLargeNumber(int number, Position startPos, Color color) const;
+    void drawDecorationsAroundField() const;
 
 };
 

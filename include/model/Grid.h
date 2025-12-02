@@ -19,7 +19,7 @@ public:
     ~Grid();
 
     void initializeRandom();
-
+    void regenerateCell(const Position& position);
     ICell& operator[] (const Position& position);
     const ICell& operator[] (const Position& position) const;
     bool isValidPosition(const Position& position) const;

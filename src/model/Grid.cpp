@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 Grid::Grid(int width, int height): _width(width), _height(height) {
+    srand(time(NULL));
     initializeRandom();
 }
 
@@ -25,14 +26,14 @@ void Grid::initializeRandom() {
 
 ICell& Grid::operator[] (const Position& position) {
     if (!isValidPosition(position)) {
-        throw std::out_of_range("Position out of range | Grid::operator[]");
+        throw std::out_of_range("Position out of range");
     }
     return *_cells[position.getY() * _width + position.getX()];
 }
 
 const ICell& Grid::operator[] (const Position& position) const {
     if (!isValidPosition(position)) {
-        throw std::out_of_range("Position out of range | Grid::operator[]");
+        throw std::out_of_range("Position out of range");
     }
     return *_cells[position.getY() * _width + position.getX()];
 }
@@ -47,7 +48,7 @@ bool Grid::isValidPosition(const Position& position) const {
 
 void Grid::removeCell(const Position& position) {
     if (!isValidPosition(position)) {
-        throw std::out_of_range("Position out of range | Grid::removeCell()");
+        return;
     }
     (*this)[position].setAvailable(false);
 }

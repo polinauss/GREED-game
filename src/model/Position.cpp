@@ -15,6 +15,10 @@ bool Position::operator== (const Position& other) const {
     return (_x == other._x) && (_y == other._y);
 }
 
+bool Position::operator!= (const Position& other) const {
+    return !(*this == other);
+}
+
 Position Position::operator+(const Position& other) const {
     return Position(_x + other._x, _y + other._y);
 }
