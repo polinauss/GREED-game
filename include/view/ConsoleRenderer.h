@@ -40,6 +40,7 @@ public:
     void displayWelcomeScreen() const;
     void displayGameOver() const;
     void displayMenu(const std::vector<std::string>& menuItems, int selectedIndex, const std::string& playerName) const;
+    void drawScoreAtPosition(int score, const Position& pos) const;
 
 private:
     void initializeColorCodes();

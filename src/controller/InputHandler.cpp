@@ -98,5 +98,7 @@ Direction InputHandler::convertToDirection(char input) const {
             return Direction::DOWN;
         case 'd': case 'D':
             return Direction::RIGHT;
+        default:
+            return Direction::NONE;
     }
 }

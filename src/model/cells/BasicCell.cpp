@@ -1,6 +1,8 @@
 #include "model/cells/BasicCell.h"
+#include "model/InteractionHandler.h"
+#include "interfaces/ICellRenderVisitor.h"
 
-BasicCell::BasicCell(int value, Color color): _value(value), _color(color), _available(true) {};
+BasicCell::BasicCell(int value, Color color): _value(value), _color(color), _isAvailable(true) {};
 
 int BasicCell::getValue() const {
     return _value;
@@ -11,11 +13,11 @@ Color BasicCell::getColor() const {
 }
 
 bool BasicCell::isAvailable() const {
-    return _available;
+    return _isAvailable;
 }
 
 void BasicCell::setAvailable(bool available) {
-    _available = available;
+    _isAvailable = available;
 }
 
 void BasicCell::acceptRender(ICellRenderVisitor& visitor, const Position& pos, Color highlightColor) const {
@@ -23,10 +25,12 @@ void BasicCell::acceptRender(ICellRenderVisitor& visitor, const Position& pos, C
 }
 
 bool BasicCell::acceptInteractionColission(ICellInteractionVisitor& visitor) {
-    return visitor.collideWithBasicCell(*this);
+    InteractionHandler& handler = dynamic_cast<InteractionHandler&>(visitor);
+    int result = handler.collideWithBasicCell(*this);
+    return result != 0;
 }
 
-void BasicCell::acceptInteractionStepOn(ICellInteractionVisitor& visitor, const Position& startPos) {
-    Position finalPos = visitor.stepOnBasicCell(*this, startPos);
-    visitor.handleStepOnBasicCell(startPos, finalPos);
+Position BasicCell::acceptInteractionStepOn(ICellInteractionVisitor& visitor, const Position& position) {
+    InteractionHandler& handler = dynamic_cast<InteractionHandler&>(visitor);
+    return handler.stepOnBasicCell(*this, position);
 }

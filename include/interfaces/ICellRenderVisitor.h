@@ -1,6 +1,8 @@
 #ifndef CELLRENDERVISITOR
 #define CELLRENDERVISITOR
 
+#include "model/Position.h"
+
 class BasicCell;
 class Position;
 

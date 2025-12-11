@@ -14,16 +14,17 @@ private:
     GameModel* _model;
     std::unique_ptr<ConsoleRenderer> _renderer;
     std::unique_ptr<Settings> _settings;
+    void updateRenderer();
 
 public:
     explicit GameView(GameModel* model);
     ~GameView() = default;
-
+  
+    void refresh();
     void displayOffset();
-
+    void renderScore();
     void renderStatringState();
     void renderMove();
-    void renderScore();
     void highlightMoveDirection(std::vector<std::pair<bool, Position>>& availableMoves, Direction direction);
     void highlightGameOver();
     void displayGameOver();

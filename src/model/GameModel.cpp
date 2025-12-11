@@ -12,6 +12,7 @@ GameModel::GameModel(int width, int height):
     initializeGame();
 }
 
+
 void GameModel::initializeGame() {
     if (_grid.isValidPosition(_player.getPosition())) {
         _grid.removeCell(_player.getPosition());
@@ -30,29 +31,32 @@ void GameModel::makeMove(Direction direction) {
     if (_gameOver) return;
     
     Position playerPos = _player.getPosition();
-    Position cellPos = playerPos;
+    Position targetCellPos(0, 0);
 
     switch(direction) {
         case Direction::UP:
-            cellPos = _player.getPosition() + Position(0, -1);
+            targetCellPos = _player.getPosition() + Position(0, -1);
             break;
         case Direction::DOWN:
-            cellPos = _player.getPosition() + Position(0, 1);
+            targetCellPos = _player.getPosition() + Position(0, 1);
             break;
         case Direction::LEFT:
-            cellPos = _player.getPosition() + Position(-1, 0);
+            targetCellPos = _player.getPosition() + Position(-1, 0);
             break;
         case Direction::RIGHT:
-            cellPos = _player.getPosition() + Position(1, 0);
+            targetCellPos = _player.getPosition() + Position(1, 0);
             break;
+        default:
+            return;
     }  
 
-    if (!isValidMove(cellPos)) {
+    if (!isValidMove(targetCellPos)) {
         _gameOver = true;
         return;
     }
 
-    _grid[cellPos].acceptInteractionStepOn(_interactionHandler, cellPos);
+    Position finalPos = _grid[targetCellPos].acceptInteractionStepOn(_interactionHandler, targetCellPos);
+    _interactionHandler.handleStepOnBasicCell(targetCellPos, finalPos);
 }
 
 bool GameModel::isGameOver() const {

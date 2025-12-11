@@ -21,7 +21,28 @@ ICell* CellGenerator::createBasicCell(int value, Color color) {
 }
 
 ICell* CellGenerator::createRandomCell() {
-    int value = rand() % 9 + 1;
-    Color color = gameColors[rand() % gameColors.size()];
+    int value = rand() % 5 + 1;
+    
+    Color color;
+    switch(value) {
+        case 1:
+            color = Color::RED;
+            break;
+        case 2:
+            color = Color::GREEN;
+            break;
+        case 3:
+            color = Color::BLUE;
+            break;
+        case 4:
+            color = Color::YELLOW;
+            break;
+        case 5:
+            color = Color::MAGENTA;
+            break;
+        default:
+            color = Color::CYAN;
+    }
+    
     return new BasicCell(value, color);
 }

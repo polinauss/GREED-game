@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-Settings::Settings(int minWidth, int minHeight): _minWidth(minWidth), _minHeight(minHeight) {
+Settings::Settings(int minWidth, int minHeight): _minWidth(52), _minHeight(27) {
     updateTerminalSize();
 };
 
@@ -19,8 +19,14 @@ void Settings::updateTerminalSize() {
 }
 
 Position Settings::calculateCenteringOffsets(int gridWidth, int gridHeight) {
-    int offsetX = (_terminalWidth - gridWidth) / 2;
-    int offsetY = (_terminalHeight - gridHeight) / 2;
+
+    int visualWidth = gridWidth * 2;
+    
+    int totalWidth = visualWidth + 2;
+    int totalHeight = gridHeight + 2;
+
+    int offsetX = (_terminalWidth - totalWidth) / 2;
+    int offsetY = (_terminalHeight - totalHeight) / 2+1;
     return Position(offsetX, offsetY);
 }
 

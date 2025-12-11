@@ -6,7 +6,7 @@
 #include <iostream>
 
 
-ConsoleRenderer::ConsoleRenderer(Position offset): _offset(offset + Position(0, 1)), _playerSymbol("X"), _emptycellSymbol(".") {
+ConsoleRenderer::ConsoleRenderer(Position offset): _offset(offset + Position(0, 1)), _playerSymbol("X "), _emptycellSymbol("  ") {
     initializeColorCodes();
 }
 
@@ -21,6 +21,7 @@ void ConsoleRenderer::initializeColorCodes() {
     _colorCodes[Color::DEFAULT] = "\033[0m";
     _colorCodes[Color::BLUEHIGHLIGHT] = "\033[44;37m";
     _colorCodes[Color::REDHIGHLIGHT] = "\033[41m";
+    _colorCodes[Color::BLACK] = "\033[30m";
 }
 
 std::string ConsoleRenderer::getColorCode(Color color) const {
@@ -32,7 +33,7 @@ std::string ConsoleRenderer::getColorCode(Color color) const {
 }
 
 void ConsoleRenderer::moveCursor(const Position& pos) const {
-    std::cout << "\033[" << pos.getY() << ";" << pos.getX() << "H";
+    std::cout << "\033[" << (pos.getY() +1)<< ";" << (pos.getX()+1) << "H";
 }
 
 void ConsoleRenderer::showCursor() const {
@@ -48,61 +49,110 @@ void ConsoleRenderer::hideCursor() const {
 void ConsoleRenderer::drawBasicCell(const BasicCell& cell, const Position& pos, Color highlightColor) const {
     moveCursor(pos);
 
-    if (highlightColor != Color::DEFAULT) {
-        std::cout << _colorCodes.at(highlightColor);
-    }
-
     if (cell.isAvailable()) {
         std::string colorCode = _colorCodes.at(cell.getColor());
-        std::cout << colorCode << cell.getValue();
+        
+        if (highlightColor != Color::DEFAULT) {
+            std::cout << _colorCodes.at(highlightColor) << "\033[1m" 
+                      << cell.getValue() << " " << "\033[0m";
+        } else {
+            std::cout << "\033[47m" << colorCode << cell.getValue() << " " << "\033[0m";
+        }
     } else {
-        std::cout << _emptycellSymbol;
+        std::cout << "\033[47m\033[30m" << "· " << "\033[0m";
     }
-
-    std::cout << _colorCodes.at(Color::DEFAULT);
 }
 
 void ConsoleRenderer::drawStartingState(const Grid& grid) {
     hideCursor();
     int gridWidth = grid.getWidth();
     int gridHeight = grid.getHeight();
+    
+    int visualWidth = gridWidth * 2;
+
+    for (int col = -1; col <= visualWidth; col++) {
+        Position borderPos(col, -1);
+        moveCursor(borderPos + _offset);
+        std::cout << "\033[40m \033[0m";
+    }
+
+    for (int row = 0; row < gridHeight; row++) {
+        Position leftBorderPos(-1, row);
+        moveCursor(leftBorderPos + _offset);
+        std::cout << "\033[40m \033[0m";
+        
+        Position rightBorderPos(visualWidth, row);
+        moveCursor(rightBorderPos + _offset);
+        std::cout << "\033[40m \033[0m";
+    }
+    
+    for (int col = -1; col <= visualWidth; col++) {
+        Position bottomBorderPos(col, gridHeight);
+        moveCursor(bottomBorderPos + _offset);
+        std::cout << "\033[40m \033[0m";
+    }
 
     for (int row = 0; row < gridHeight; row++) {
         for (int col = 0; col < gridWidth; col++) {
             const Position& cellPos = Position(col, row);
             const ICell& cell = grid[cellPos];
-            cell.acceptRender(*this, cellPos + _offset);
+            
+            Position drawPos = Position(col * 2, row) + _offset;
+            
+            std::cout << "\033[47m";
+            cell.acceptRender(*this, drawPos);
+            std::cout << "\033[0m";
         }
     }
+    
+    std::cout.flush();
 }
 
 void ConsoleRenderer::drawPlayer(const Position& playerPos) {
-    moveCursor(playerPos + _offset);
+    Position drawPos = Position(playerPos.getX() * 2, playerPos.getY()) + _offset;
+    moveCursor(drawPos);
     std::cout << _colorCodes.at(Color::DEFAULT) << _playerSymbol << _colorCodes.at(Color::DEFAULT);
     std::cout.flush();
 }
 
 void ConsoleRenderer::drawMove(const Grid& grid, const std::vector<Position>& affectedElements) {
     for (const Position& pos: affectedElements) {
-        grid[pos].acceptRender(*this, pos + _offset);
+        Position drawPos = Position(pos.getX() * 2, pos.getY()) + _offset;
+        
+        moveCursor(drawPos);
+        std::cout << "\033[47m";
+        grid[pos].acceptRender(*this, drawPos);
+        std::cout << "\033[0m";
     }
 
     std::cout.flush();
-}   
+} 
 
 void ConsoleRenderer::highlightMoveDirection(const Grid& grid, std::vector<std::pair<bool, Position>>& availableMoves, Direction direction) {
     for (std::pair<bool, Position> elem: availableMoves) {
         if (elem.first) {
-            grid[elem.second].acceptRender(*this, elem.second + _offset);
+            Position drawPos = Position(elem.second.getX() * 2, elem.second.getY()) + _offset;
+            moveCursor(drawPos);
+            std::cout << "\033[47m";
+            grid[elem.second].acceptRender(*this, drawPos);
+            std::cout << "\033[0m";
         }
     }
-
+    
     int index = static_cast<int>(direction);
-    Position highlightedCellPos = availableMoves[index].second;
     if (availableMoves[index].first) {
-        grid[highlightedCellPos].acceptRender(*this, highlightedCellPos + _offset, Color::BLUEHIGHLIGHT); 
+        Position highlightedCellPos = availableMoves[index].second;
+        Position drawPos = Position(highlightedCellPos.getX() * 2, highlightedCellPos.getY()) + _offset;
+        moveCursor(drawPos);
+        grid[highlightedCellPos].acceptRender(*this, drawPos, Color::BLUEHIGHLIGHT); 
     }
 
+    std::cout.flush();
+}
+
+void ConsoleRenderer::drawScoreAtPosition(int score, const Position& pos) const {
+    moveCursor(pos);
+    std::cout << "\033[1;36mScore: " << score << "\033[0m";
     std::cout.flush();
 }
 
@@ -116,14 +166,18 @@ void ConsoleRenderer::highlightGameOverState(const Grid& grid) {
         for (int col = 0; col < gridWidth; col++) {
             const Position& cellPos = Position(col, row);
             const ICell& cell = grid[cellPos];
-
+            
+            Position drawPos = Position(col * 2, row) + _offset;
+            moveCursor(drawPos);
+            
             if (cell.isAvailable()) {
-                cell.acceptRender(*this, cellPos + _offset, Color::REDHIGHLIGHT);
+                cell.acceptRender(*this, drawPos, Color::REDHIGHLIGHT);
             } else {
-                cell.acceptRender(*this, cellPos + _offset);
+                std::cout << "\033[47m   \033[0m";
             }
         }
-    }   
+    }
+    std::cout.flush();
 }
 
 void ConsoleRenderer::clearScreen() const {
@@ -143,7 +197,10 @@ void ConsoleRenderer::drawScore(int score) const {
 }
 
 void ConsoleRenderer::displayWelcomeScreen() const {
-    clearScreen();
+    if (system("clear")) {
+        std::cout << "\033[2J\033[3J\033[H";
+    }
+    
     std::cout << "\033[1;36m" << "=== WELCOME TO THE GAME ===" << "\033[0m" << std::endl;
 }
 
