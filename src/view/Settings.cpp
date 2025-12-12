@@ -13,8 +13,8 @@ void Settings::updateTerminalSize() {
     _terminalWidth = w.ws_col;
     _terminalHeight = w.ws_row;
 
-    if (_terminalWidth < _minWidth || _terminalHeight < _minHeight) {
-        throw std::runtime_error("Terminal size is too small)"); 
+    if (_terminalWidth < 80 || _terminalHeight < 30) {
+        throw std::runtime_error("Terminal too small");
     }
 }
 

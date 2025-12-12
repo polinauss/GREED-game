@@ -33,7 +33,13 @@ std::string ConsoleRenderer::getColorCode(Color color) const {
 }
 
 void ConsoleRenderer::moveCursor(const Position& pos) const {
-    std::cout << "\033[" << (pos.getY() +1)<< ";" << (pos.getX()+1) << "H";
+    int screenY = pos.getY() + 1;
+    int screenX = pos.getX() + 1;
+    
+    if (screenY < 1) screenY = 1;
+    if (screenX < 1) screenX = 1;
+    
+    std::cout << "\033[" << screenY << ";" << screenX << "H";
 }
 
 void ConsoleRenderer::showCursor() const {
