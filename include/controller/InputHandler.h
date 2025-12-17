@@ -20,7 +20,6 @@ public:
     void disableCanonicalMode();
     Direction getDirectionFromInput();
 
-private:
     bool isValidDirection(char input) const;
     Direction convertToDirection(char input) const;
     bool handleEscapeSequence(Direction& result) const;

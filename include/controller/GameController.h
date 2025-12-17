@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <cstddef> // Добавлено для size_t
 
 class GameController {
 private:
@@ -29,11 +30,8 @@ public:
     void resetReturnToMenu() { _shouldReturnToMenu = false; }
     bool isPaused() const { return _paused; }
 
-
 private:
-    Direction processInput();
-    void handleSpecialInput(char input);
-    void showPauseMenu();
+    void clearScreen();
 };
 
 #endif

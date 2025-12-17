@@ -8,6 +8,7 @@
 #include <fstream>
 #include <algorithm>
 #include <sstream>
+#include <cstddef>
 
 struct GameState {
     Position playerPosition;

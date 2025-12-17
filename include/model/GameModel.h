@@ -11,6 +11,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <cstddef>
 
 class GameModel {
 private:

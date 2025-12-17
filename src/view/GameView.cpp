@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <signal.h>
 #include <chrono>
+#include <sys/ioctl.h>
 
 static GameView* globalGameView = nullptr;
 
@@ -24,6 +25,9 @@ GameView::GameView(GameModel* model): _model(model) {
     
     _renderer = std::make_unique<ConsoleRenderer>(offset);
     
+    std::cout << "\033[?7l";
+    std::cout << "\033[?1049h";
+    
     struct sigaction sa;
     sa.sa_handler = handleResize;
     sigemptyset(&sa.sa_mask);
@@ -31,6 +35,11 @@ GameView::GameView(GameModel* model): _model(model) {
     sigaction(SIGWINCH, &sa, nullptr);
     
     globalGameView = this;
+}
+
+GameView::~GameView() {
+    std::cout << "\033[?7h";
+    std::cout << "\033[?1049l";
 }
 
 void GameView::updateRenderer() {
@@ -58,6 +67,10 @@ void GameView::highlightGameOver() {
     _renderer->highlightGameOverState(_model->getGrid());
     _renderer->drawPlayer(_model->getPlayerPosition());
     
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int terminalWidth = w.ws_col;
+    
     int gridWidth = _model->getGrid().getWidth() * 2;
     Position fieldOffset = _settings->calculateCenteringOffsets(
         _model->getGrid().getWidth(),
@@ -72,25 +85,29 @@ void GameView::highlightGameOver() {
 }
 
 void GameView::renderScore() {
+struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int terminalWidth = w.ws_col;
+    
+    int gridWidth = _model->getGrid().getWidth() * 2;
     Position fieldOffset = _settings->calculateCenteringOffsets(
         _model->getGrid().getWidth(),
         _model->getGrid().getHeight()
     );
     
-    int gridWidth = _model->getGrid().getWidth() * 2;
-    
     int scoreX = fieldOffset.getX() + (gridWidth / 2) - 4;
     int scoreY = fieldOffset.getY() - 2;
     if (scoreY < 0) scoreY = 0;
     
-    std::cout << "\033[" << (scoreY + 1) << ";" << (scoreX + 1) << "H";
-    std::cout << "\033[1;36mScore: " << _model->getScore() << "\033[0m";
-    std::cout.flush();
+    Position scorePos(scoreX, scoreY);
+    
+    _renderer->drawScoreAtPosition(_model->getScore(), scorePos);
+
 }
 
 void GameView::highlightMoveDirection(std::vector<std::pair<bool, Position>>& availableMoves, Direction direction) {
     _renderer->highlightMoveDirection(_model->getGrid(), availableMoves, direction);
-    renderScore();
+//    renderScore();
 }
 
 void GameView::displayGameOver() {
@@ -105,7 +122,7 @@ void GameView::displayWelcomeScreen() {
 void GameView::displayMenu(const std::vector<std::string>& menuItems, int selectedIndex) {}
 
 void GameView::refresh() {
-    system("clear");
+    std::cout << "\033[2J\033[1;1H";
     
     try {
         _settings->updateTerminalSize();
@@ -123,5 +140,4 @@ void GameView::refresh() {
     
     std::cout.flush();
 }
-
-void GameView::showHelp() {}
+//void GameView::showHelp() {}

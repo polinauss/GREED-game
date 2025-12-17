@@ -18,7 +18,7 @@ private:
 
 public:
     explicit GameView(GameModel* model);
-    ~GameView() = default;
+    virtual ~GameView();
   
     void refresh();
     void displayOffset();

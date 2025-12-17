@@ -1,4 +1,5 @@
 #include "controller/MenuController.h"
+#include "controller/MenuController.h"
 #include "controller/InputHandler.h"
 #include <iostream>
 #include <unistd.h>
@@ -58,66 +59,252 @@ MenuController::MenuController() : _playerName("Player"), _hasSavedGame(false) {
 }
 
 void MenuController::drawAsciiTitle() {
-    system("clear");
+    std::cout << "\033[2J\033[1;1H";
     
-    std::cout << "\033[1;35m";
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int terminalWidth = w.ws_col;
+    int terminalHeight = w.ws_row;
     
-    std::cout << R"(
- ######   ########  ########  ########  ######  
-##    ##  ##     #  ##        ##        ##    ##
-##        #######   #######   #######   ##    ##
-##        ####      ##        ##        ##    ##
-##  ####  ##  ##    ##        ##        ##    ##
- ##### #  ##   ###  #######   ########  ######  
-    )" << std::endl;
+    std::vector<std::string> titleLines = {
+        " ######   ########  ########  ########  ######  ",
+        "##    ##  ##    ##  ##        ##        ##    ##",
+        "##        #######   #######   #######   ##    ##", 
+        "##        ####      ##        ##        ##    ##",
+        "##  ####  ##  ##    ##        ##        ##    ##",
+        " ##### #  ##   ###  #######   ########  ######  "
+    };
     
-    std::cout << "\033[1;36m" << "A Colorful Number Jumping Adventure!" << "\033[0m" << std::endl << std::endl;
-}
-
-void MenuController::showWelcomeScreen() {
-    system("clear");
-    drawAsciiTitle();
+    int verticalPadding = terminalHeight / 4;
+    for (int i = 0; i < verticalPadding; i++) {
+        std::cout << std::endl;
+    }
     
-    std::cout << "\033[1;33m" << "Controls:" << "\033[0m" << std::endl;
-    std::cout << "\033[32m" << "W/↑ A/← S/↓ D/→" << "\033[0m" << " - Move" << std::endl;
-    std::cout << "\033[33m" << "P" << "\033[0m" << " - Pause Game" << std::endl;
-    std::cout << "\033[34m" << "S" << "\033[0m" << " - Save Game" << std::endl;
-    std::cout << "\033[35m" << "M" << "\033[0m" << " - Menu" << std::endl;
-    std::cout << "\033[36m" << "ESC" << "\033[0m" << " - Exit" << std::endl << std::endl;
+    for (const auto& line : titleLines) {
+        int padding = (terminalWidth - line.length()) / 2;
+        if (padding < 0) padding = 0;
+        std::cout << std::string(padding, ' ') << "\033[1;35m" << line << "\033[0m" << std::endl;
+    }
     
-    std::cout << "\033[1;37m" << "Press any key to continue..." << "\033[0m";
-    
-    struct termios oldt, newt;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    
-    char input;
-    read(STDIN_FILENO, &input, 1);
-    
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    std::string subtitle = "A Colorful Number Jumping Adventure!";
+    int subtitlePadding = (terminalWidth - subtitle.length()) / 2;
+    std::cout << std::string(subtitlePadding, ' ') << "\033[1;36m" << subtitle << "\033[0m" << std::endl << std::endl;
 }
 
 void MenuController::displayMenuItems(const std::vector<std::string>& items, int selectedIndex) {
-    system("clear");
-    drawAsciiTitle();
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int terminalWidth = w.ws_col;
+    int terminalHeight = w.ws_row;
     
-    std::cout << "\033[1;37m" << "Player: \033[1;33m" << _playerName << "\033[0m" << std::endl << std::endl;
+    std::cout << "\033[2J\033[1;1H";
+    std::cout.flush();
+    
+    std::cout << "\033[?1049h";
+    
+    std::vector<std::string> titleLines = {
+        " ######   ########  ########  ########  #######  ",
+        "##    ##  ##     ## ##        ##        ##     ##",
+        "##        ##     ## ##        ##        ##     ##", 
+        "##   #### ########  #######   #######   ##     ##",
+        "##    ##  ##   ##   ##        ##        ##     ##",
+        " ######   ##     ## ########  ########  #######  " 
+    };
+    
+    int verticalPadding = terminalHeight / 4;
+    for (int i = 0; i < verticalPadding; i++) {
+        std::cout << std::endl;
+    }
+    
+    for (const auto& line : titleLines) {
+        int padding = (terminalWidth - line.length()) / 2;
+        if (padding < 0) padding = 0;
+        std::cout << std::string(padding, ' ') << "\033[1;35m" << line << "\033[0m" << std::endl;
+    }
+    
+    std::cout << std::endl;
+    
+    std::string playerInfo = "\033[1;37mPlayer: \033[1;33m" + _playerName + "\033[0m";
+    int playerPadding = (terminalWidth - playerInfo.length()) / 2;
+    std::cout << std::string(playerPadding, ' ') << playerInfo << std::endl << std::endl;
+    
+    std::vector<std::vector<std::string>> numbers = {
+        {
+            " ##",
+            "###", 
+            " ##",
+            " ##",
+            " ##",
+            " ##",
+            "####"
+        },
+        {
+            "#### ",
+            "   ##",
+            "  ## ",
+            " ##  ",
+            "##   ",
+            "##   ",
+            "#####"
+        },
+        {
+            "#### ",
+            "    #",
+            "    #",
+            " ### ",
+            "    #",
+            "    #",
+            "#### "
+        },
+        {
+            "   ##",
+            "  ###",
+            " ## #", 
+            "##  #",
+            "######",
+            "    #",
+            "    #"
+        },
+        {
+            "######",
+            "##    ",
+            "##    ",
+            "##### ",
+            "    ##",
+            "    ##",
+            "##### "
+        },
+        {
+            "  ### ",
+            " ##   ",
+            "##    ",
+            "##### ",
+            "##  ##",
+            "##  ##",
+            " #### "
+        }
+    };
+    
+    int menuStartY = verticalPadding + titleLines.size() + 4;
+    int menuStartX = (terminalWidth - 30) / 2;
     
     for (size_t i = 0; i < items.size(); i++) {
+        int itemX = menuStartX;
+        int itemY = menuStartY + i;
+        
+        if (itemY >= terminalHeight) break;
+        
+        std::cout << "\033[" << itemY << ";" << itemX << "H";
+        
         if (i == selectedIndex) {
-            std::cout << "\033[1;32m" << "  > " << items[i] << " <" << "\033[0m" << std::endl;
+            std::cout << "\033[1;32m" << "  > " << items[i] << " <" << "\033[0m";
         } else {
-            std::cout << "\033[37m" << "    " << items[i] << "\033[0m" << std::endl;
+            std::cout << "\033[37m" << "    " << items[i] << "\033[0m";
+        }
+        
+        std::cout << "\033[K";
+    }
+    
+    std::string colors[6] = {
+        "\033[1;31m",
+        "\033[1;32m",
+        "\033[1;34m",
+        "\033[1;33m",
+        "\033[1;35m",
+        "\033[1;36m"
+    };
+    
+    int num1X = menuStartX - 10;
+    int num1Y = menuStartY;
+    
+    if (num1X > 0) {
+        for (size_t row = 0; row < numbers[0].size(); row++) {
+            int currentY = num1Y + row;
+            if (currentY < terminalHeight) {
+                std::cout << "\033[" << currentY << ";" << num1X << "H";
+                std::cout << colors[0] << numbers[0][row] << "\033[0m";
+            }
         }
     }
     
-    std::cout << std::endl << "\033[3;90m" << "Use UP/DOWN arrows to navigate, ENTER to select" << "\033[0m" << std::endl;
+    int num2X = menuStartX + 35;
+    int num2Y = menuStartY;
+    
+    if (num2X + 5 < terminalWidth) {
+        for (size_t row = 0; row < numbers[1].size(); row++) {
+            int currentY = num2Y + row;
+            if (currentY < terminalHeight) {
+                std::cout << "\033[" << currentY << ";" << num2X << "H";
+                std::cout << colors[1] << numbers[1][row] << "\033[0m";
+            }
+        }
+    }
+    
+    int num3X = menuStartX - 12;
+    int num3Y = menuStartY + items.size()/2;
+    
+    if (num3X > 0) {
+        for (size_t row = 0; row < numbers[2].size(); row++) {
+            int currentY = num3Y + row;
+            if (currentY < terminalHeight) {
+                std::cout << "\033[" << currentY << ";" << num3X << "H";
+                std::cout << colors[2] << numbers[2][row] << "\033[0m";
+            }
+        }
+    }
+    
+    int num4X = menuStartX + 37;
+    int num4Y = menuStartY + items.size()/2;
+    
+    if (num4X + 5 < terminalWidth) {
+        for (size_t row = 0; row < numbers[3].size(); row++) {
+            int currentY = num4Y + row;
+            if (currentY < terminalHeight) {
+                std::cout << "\033[" << currentY << ";" << num4X << "H";
+                std::cout << colors[3] << numbers[3][row] << "\033[0m";
+            }
+        }
+    }
+    
+    int num5X = menuStartX - 10;
+    int num5Y = menuStartY + items.size() + 2;
+    
+    if (num5X > 0 && num5Y + 7 < terminalHeight) {
+        for (size_t row = 0; row < numbers[4].size(); row++) {
+            int currentY = num5Y + row;
+            if (currentY < terminalHeight) {
+                std::cout << "\033[" << currentY << ";" << num5X << "H";
+                std::cout << colors[4] << numbers[4][row] << "\033[0m";
+            }
+        }
+    }
+    
+    int num6X = menuStartX + 35;
+    int num6Y = menuStartY + items.size() + 2;
+    
+    if (num6X + 6 < terminalWidth && num6Y + 7 < terminalHeight) {
+        for (size_t row = 0; row < numbers[5].size(); row++) {
+            int currentY = num6Y + row;
+            if (currentY < terminalHeight) {
+                std::cout << "\033[" << currentY << ";" << num6X << "H";
+                std::cout << colors[5] << numbers[5][row] << "\033[0m";
+            }
+        }
+    }
+    
+    std::cout << "\033[" << (terminalHeight - 2) << ";1H";
+    std::string hint = "\033[3;90mUse UP/DOWN arrows to navigate, ENTER to select\033[0m";
+    int hintPadding = (terminalWidth - hint.length()) / 2;
+    std::cout << std::string(hintPadding, ' ') << hint;
+    std::cout << "\033[K";
+    
+    std::cout.flush();
 }
 
 void MenuController::setPlayerName() {
+    std::cout << "\033[?1049l";
     system("clear");
+    
     std::cout << "\033[1;36m" << "=== SET PLAYER NAME ===" << "\033[0m" << std::endl << std::endl;
     std::cout << "Current name: \033[1;33m" << _playerName << "\033[0m" << std::endl;
     std::cout << "Enter new name: ";
@@ -131,30 +318,55 @@ void MenuController::setPlayerName() {
     }
     
     sleep(1);
+    std::cout << "\033[?1049h";
 }
-
 void MenuController::showRules() {
+    std::cout << "\033[?1049l";
     system("clear");
-    std::cout << "\033[1;36m" << "=== GAME RULES ===" << "\033[0m" << std::endl << std::endl;
     
-    std::cout << "\033[1;33m" << "Objective:" << "\033[0m" << std::endl;
-    std::cout << "Jump on colored cells to score points!" << std::endl << std::endl;
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int terminalWidth = w.ws_col;
+    int terminalHeight = w.ws_row;
     
-    std::cout << "\033[1;33m" << "How to Play:" << "\033[0m" << std::endl;
-    std::cout << "1. Move using W/A/S/D or arrow keys" << std::endl;
-    std::cout << "2. When you step on a cell:" << std::endl;
-    std::cout << "   - You jump forward by its value" << std::endl;
-    std::cout << "   - You earn points equal to the value" << std::endl;
-    std::cout << "3. If you land outside the grid or on unavailable cell, game over!" << std::endl << std::endl;
+    int verticalPadding = terminalHeight / 6;
+    for (int i = 0; i < verticalPadding; i++) {
+        std::cout << std::endl;
+    }
     
-    std::cout << "\033[1;33m" << "Cell Colors:" << "\033[0m" << std::endl;
-    std::cout << "\033[31mRed: 1 point\033[0m" << std::endl;
-    std::cout << "\033[32mGreen: 2 points\033[0m" << std::endl;
-    std::cout << "\033[34mBlue: 3 points\033[0m" << std::endl;
-    std::cout << "\033[33mYellow: 4 points\033[0m" << std::endl;
-    std::cout << "\033[35mMagenta: 5 points\033[0m" << std::endl << std::endl;
+    std::string title = "=== GAME RULES ===";
+    int titlePadding = (terminalWidth - title.length()) / 2;
+    std::cout << std::string(titlePadding, ' ') << "\033[1;36m" << title << "\033[0m" << std::endl << std::endl;
     
-    std::cout << "\033[1;37m" << "Press any key to return to menu..." << "\033[0m";
+    std::vector<std::string> rules = {
+        "\033[1;33mObjective:\033[0m",
+        "Jump on colored cells to score points!",
+        "",
+        "\033[1;33mHow to Play:\033[0m",
+        "1. Move using W/A/S/D or arrow keys",
+        "2. When you step on a cell:",
+        "   - You jump forward by its value",
+        "   - You earn points equal to the value",
+        "3. If you land outside the grid or on unavailable cell, game over!",
+        "",
+        "\033[1;33mCell Colors:\033[0m",
+        "\033[31mRed: 1 point\033[0m",
+        "\033[32mGreen: 2 points\033[0m",
+        "\033[34mBlue: 3 points\033[0m",
+        "\033[33mYellow: 4 points\033[0m",
+        "\033[35mMagenta: 5 points\033[0m",
+        ""
+    };
+    
+    for (const auto& rule : rules) {
+        int padding = (terminalWidth - rule.length()) / 2;
+        if (padding < 0) padding = 0;
+        std::cout << std::string(padding, ' ') << rule << std::endl;
+    }
+    
+    std::string hint = "\033[1;37mPress any key to return to menu...\033[0m";
+    int hintPadding = (terminalWidth - hint.length()) / 2;
+    std::cout << std::string(hintPadding, ' ') << hint << std::endl;
     
     struct termios oldt, newt;
     tcgetattr(STDIN_FILENO, &oldt);
@@ -166,6 +378,8 @@ void MenuController::showRules() {
     read(STDIN_FILENO, &input, 1);
     
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    
+    std::cout << "\033[?1049h";
 }
 
 void MenuController::loadLeaderboard() {
@@ -224,6 +438,7 @@ void MenuController::addToLeaderboard(int score) {
 }
 
 void MenuController::showLeaderboard() {
+    std::cout << "\033[?1049l";
     system("clear");
     
     struct winsize w;
@@ -281,6 +496,8 @@ void MenuController::showLeaderboard() {
     read(STDIN_FILENO, &input, 1);
     
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    
+    std::cout << "\033[?1049h";
 }
 
 void MenuController::saveGame(GameModel* model) {
@@ -334,7 +551,11 @@ bool MenuController::loadGame(GameModel* model) {
     state.deserialize(file);
     file.close();
     
+    //Восстановить состояние модели из state
     _hasSavedGame = true;
+    
+    std::cout << "\033[1;32m" << "Game loaded successfully!" << "\033[0m" << std::endl;
+    sleep(1);
     return true;
 }
 
@@ -351,6 +572,7 @@ bool MenuController::runMainMenu() {
     std::ifstream file(SAVE_FILE, std::ios::binary);
     _hasSavedGame = file.good();
     file.close();
+    
     if (!_hasSavedGame) {
         menuItems[2] = "Load Saved Game (No save)";
     } else {
@@ -358,69 +580,101 @@ bool MenuController::runMainMenu() {
     }
     
     int selectedIndex = 0;
-    bool menuRunning = true;
     
-    InputHandler inputHandler;
+    displayMenuItems(menuItems, selectedIndex);
     
-    while (menuRunning) {
-        displayMenuItems(menuItems, selectedIndex);
-        
-        inputHandler.enableCanonicalMode();
+    while (true) {
         char input;
-        read(STDIN_FILENO, &input, 1);
+        struct termios oldt, newt;
+        tcgetattr(STDIN_FILENO, &oldt);
+        newt = oldt;
+        newt.c_lflag &= ~(ICANON | ECHO);
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
         
-        if (input == '\033') {
-            char seq[2];
-            if (read(STDIN_FILENO, &seq[0], 1) > 0 && seq[0] == '[') {
-                if (read(STDIN_FILENO, &seq[1], 1) > 0) {
-                    if (seq[1] == 'A') {
-                        selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
-                    } else if (seq[1] == 'B') {
-                        selectedIndex = (selectedIndex + 1) % menuItems.size();
+        ssize_t bytesRead = read(STDIN_FILENO, &input, 1);
+        
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+        
+        if (bytesRead > 0) {
+            if (input == '\033') {
+                char seq[2];
+                
+                tcgetattr(STDIN_FILENO, &oldt);
+                newt = oldt;
+                newt.c_lflag &= ~(ICANON | ECHO);
+                tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+                
+                if (read(STDIN_FILENO, &seq[0], 1) > 0) {
+                    if (seq[0] == '[') {
+                        if (read(STDIN_FILENO, &seq[1], 1) > 0) {
+                            if (seq[1] == 'A') {
+                                selectedIndex = (selectedIndex - 1 + menuItems.size()) % menuItems.size();
+                                displayMenuItems(menuItems, selectedIndex);
+                            } else if (seq[1] == 'B') { 
+                                selectedIndex = (selectedIndex + 1) % menuItems.size();
+                                displayMenuItems(menuItems, selectedIndex);
+                            }
+                        }
                     }
                 }
+                
+                tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+            } 
+            else if (input == '\n' || input == '\r' || input == ' ') { 
+                switch(selectedIndex) {
+                    case 0:
+                        setPlayerName();
+                        displayMenuItems(menuItems, selectedIndex);
+                        break;
+                    case 1:
+                        std::cout << "\033[?1049l"; 
+                        return true;
+                    case 2:
+                        if (_hasSavedGame) {
+                            std::cout << "\033[?1049l";
+                            std::cout << "\033[1;33m" << "Loading saved game..." << "\033[0m" << std::endl;
+                            sleep(1);
+                            return true;
+                        } else {
+                            std::cout << "\033[1;33m" << "No saved game available!" << "\033[0m" << std::endl;
+                            sleep(1);
+                            displayMenuItems(menuItems, selectedIndex);
+                        }
+                        break;
+                    case 3:
+                        showRules();
+                        displayMenuItems(menuItems, selectedIndex);
+                        break;
+                    case 4:
+                        showLeaderboard();
+                        displayMenuItems(menuItems, selectedIndex);
+                        break;
+                    case 5: // Exit
+                        std::cout << "\033[?1049l";
+                        system("clear");
+                        std::cout << "\033[1;36m" << "Goodbye!" << "\033[0m" << std::endl;
+                        exit(0);
+                }
+                
+                file.open(SAVE_FILE, std::ios::binary);
+                _hasSavedGame = file.good();
+                file.close();
+                
+                if (!_hasSavedGame) {
+                    menuItems[2] = "Load Saved Game (No save)";
+                } else {
+                    menuItems[2] = "Load Saved Game";
+                }
             }
-        } else if (input == '\n' || input == ' ') {
-            inputHandler.disableCanonicalMode();
-            
-            switch(selectedIndex) {
-                case 0:
-                    setPlayerName();
-                    break;
-                case 1:
-                    return true;
-                case 2:
-                    if (_hasSavedGame) {
-                        std::cout << "\033[1;33m" << "Loading saved game..." << "\033[0m" << std::endl;
-                        sleep(1);
-                    } else {
-                        std::cout << "\033[1;33m" << "No saved game available!" << "\033[0m" << std::endl;
-                        sleep(1);
-                    }
-                    break;
-                case 3:
-                    showRules();
-                    break;
-                case 4:
-                    showLeaderboard();
-                    break;
-                case 5:
-                    std::cout << "\033[1;36m" << "Goodbye!" << "\033[0m" << std::endl;
-                    exit(0);
-            }
-            
-            file.open(SAVE_FILE, std::ios::binary);
-            _hasSavedGame = file.good();
-            file.close();
-            
-            if (!_hasSavedGame) {
-                menuItems[2] = "Load Saved Game (No save)";
-            } else {
-                menuItems[2] = "Load Saved Game";
+            else if (input == 'q' || input == 27) {
+                std::cout << "\033[?1049l";
+                system("clear");
+                std::cout << "\033[1;36m" << "Goodbye!" << "\033[0m" << std::endl;
+                exit(0);
             }
         }
-        inputHandler.disableCanonicalMode();
     }
     
+    std::cout << "\033[?1049l";
     return false;
 }
