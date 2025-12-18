@@ -2,6 +2,7 @@
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
+#include <stdexcept>
 
 GameModel::GameModel(int width, int height): 
     _grid(width, height), 
@@ -16,6 +17,24 @@ GameModel::GameModel(int width, int height):
 void GameModel::initializeGame() {
     if (_grid.isValidPosition(_player.getPosition())) {
         _grid.removeCell(_player.getPosition());
+    }
+}
+
+void GameModel::initializeGameFromState(
+    const std::vector<int>& cellValues, 
+    const std::vector<int>& cellColors,
+    const std::vector<int>& cellAvailable,
+    const Position& playerPos,
+    int score) 
+{
+    _score = score;
+    _player.setPosition(playerPos);
+    _gameOver = false;
+    
+    _grid.restoreState(cellValues, cellColors, cellAvailable);
+    
+    if (_grid.isValidPosition(playerPos)) {
+        _grid.removeCell(playerPos);
     }
 }
 

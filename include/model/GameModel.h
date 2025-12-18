@@ -29,6 +29,11 @@ public:
     friend class InteractionHandler;
 
     void initializeGame();
+    void initializeGameFromState(const std::vector<int>& cellValues, 
+                                const std::vector<int>& cellColors,
+                                const std::vector<int>& cellAvailable,
+                                const Position& playerPos,
+                                int score);
     bool isValidMove(Position position) const;
     void makeMove(Direction direction);
     bool isGameOver() const;

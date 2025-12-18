@@ -19,6 +19,9 @@ public:
     ~Grid();
 
     void initializeRandom();
+    void restoreState(const std::vector<int>& cellValues, 
+                     const std::vector<int>& cellColors,
+                     const std::vector<int>& cellAvailable);
 
     ICell& operator[] (const Position& position);
     const ICell& operator[] (const Position& position) const;

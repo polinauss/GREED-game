@@ -7,7 +7,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
-#include <cstddef> // Добавлено для size_t
+#include <cstddef>
 
 class GameController {
 private:

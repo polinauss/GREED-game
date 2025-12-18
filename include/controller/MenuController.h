@@ -40,12 +40,14 @@ private:
     const std::string SAVE_FILE = "game_save.dat";
     const std::string LEADERBOARD_FILE = "leaderboard.txt";
     bool _hasSavedGame;
+    int _lastSelectedOption;
 
 public:
     MenuController();
     ~MenuController() = default;
-
+    void forceSetSelectedOption(int option) { _lastSelectedOption = option; }
     bool runMainMenu();
+    int getLastSelectedOption() const { return _lastSelectedOption; }
     void showWelcomeScreen();
     void showRules();
     void setPlayerName();

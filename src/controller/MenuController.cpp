@@ -51,7 +51,7 @@ void GameState::deserialize(std::ifstream& file) {
     file.read(reinterpret_cast<char*>(cellAvailable.data()), size * sizeof(int));
 }
 
-MenuController::MenuController() : _playerName("Player"), _hasSavedGame(false) {
+MenuController::MenuController() : _playerName("Player"), _hasSavedGame(false), _lastSelectedOption(-1) {
     loadLeaderboard();
     
     std::ifstream file(SAVE_FILE, std::ios::binary);
@@ -548,7 +548,7 @@ void MenuController::showLeaderboard() {
     std::cout << "\033[?1049h";
 }
 void MenuController::saveGame(GameModel* model) {
-    GameState state;
+     GameState state;
     state.playerPosition = model->getPlayerPosition();
     state.score = model->getScore();
     
@@ -586,25 +586,6 @@ void MenuController::saveGame(GameModel* model) {
     }
 }
 
-bool MenuController::loadGame(GameModel* model) {
-    std::ifstream file(SAVE_FILE, std::ios::binary);
-    if (!file.is_open()) {
-        std::cout << "\033[1;31m" << "No saved game found!" << "\033[0m" << std::endl;
-        sleep(1);
-        return false;
-    }
-    
-    GameState state;
-    state.deserialize(file);
-    file.close();
-    
-    //Восстановить состояние модели из state
-    _hasSavedGame = true;
-    
-    std::cout << "\033[1;32m" << "Game loaded successfully!" << "\033[0m" << std::endl;
-    sleep(1);
-    return true;
-}
 
 bool MenuController::runMainMenu() {
 
@@ -676,19 +657,19 @@ bool MenuController::runMainMenu() {
                 tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
             } 
             else if (input == '\n' || input == '\r' || input == ' ') { 
+                _lastSelectedOption = selectedIndex;
                 switch(selectedIndex) {
                     case 0:
                         setPlayerName();
                         displayMenuItems(menuItems, selectedIndex);
                         break;
-                    case 1:
+                    case 1: // Start New Game
                         std::cout << "\033[?1049l";
                         return true;
-                    case 2:
+                    case 2: // Load Saved Game
                         if (_hasSavedGame) {
                             std::cout << "\033[?1049l";
-                            std::cout << "\033[1;33m" << "Loading saved game..." << "\033[0m" << std::endl;
-                            sleep(1);
+                            
                             return true;
                         } else {
                             std::cout << "\033[1;33m" << "No saved game available!" << "\033[0m" << std::endl;
@@ -704,7 +685,7 @@ bool MenuController::runMainMenu() {
                         showLeaderboard();
                         displayMenuItems(menuItems, selectedIndex);
                         break;
-                    case 5: // Exit
+                    case 5:
                         std::cout << "\033[?1049l";
                         system("clear");
                         std::cout << "\033[1;36m" << "Goodbye!" << "\033[0m" << std::endl;
@@ -734,3 +715,29 @@ bool MenuController::runMainMenu() {
     system("clear");
     return false;
 }
+bool MenuController::loadGame(GameModel* model) {
+    std::ifstream loadFile(SAVE_FILE, std::ios::binary);
+    if (!loadFile.is_open()) {
+        std::cout << "DEBUG: Не могу открыть файл сохранения" << std::endl;
+        return false;
+    }
+    
+    GameState state;
+    state.deserialize(loadFile);
+    loadFile.close();
+    
+    std::cout << "DEBUG: Загружаю игру: score=" << state.score 
+              << ", playerPos=(" << state.playerPosition.getX() 
+              << "," << state.playerPosition.getY() << ")" << std::endl;
+    
+    try {
+        model->initializeGameFromState(state.cellValues, state.cellColors, 
+                                      state.cellAvailable, state.playerPosition, state.score);
+        std::cout << "DEBUG: Игра успешно загружена!" << std::endl;
+        return true;
+    } catch (...) {
+        std::cout << "DEBUG: Ошибка при загрузке игры" << std::endl;
+        return false;
+    }
+}
+
