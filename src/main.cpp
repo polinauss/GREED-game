@@ -53,6 +53,9 @@ int main() {
         
     } catch (const std::exception& e) {
         std::cerr << "Ошибка: " << e.what() << std::endl;
+        
+        tcsetattr(STDIN_FILENO, TCSANOW, &originalTermios);
+    std::cout << "\033[?7h\033[2J\033[1;1H\033[?25h\033[0m";
         return 1;
     }
     tcsetattr(STDIN_FILENO, TCSANOW, &originalTermios);
