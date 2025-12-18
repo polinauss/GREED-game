@@ -1,6 +1,7 @@
 #include <iostream>
 #include <memory>
 #include <cstdlib>
+#include <csignal>
 #include <unistd.h>
 #include <termios.h>
 #include "model/GameModel.h"
@@ -9,7 +10,21 @@
 #include "controller/MenuController.h"
 #include <cstddef>
 
+struct termios originalTermios;
+
+void sigintHandler(int sig) {
+    tcsetattr(STDIN_FILENO, TCSANOW, &originalTermios);
+    std::cout << "\033[?7h\033[2J\033[1;1H\033[?25h\033[0m";
+    system("clear");
+    std::cout << "\033[1;36mGoodbye!\033[0m" << std::endl;
+    std::exit(0);
+}
+
 int main() {
+
+    tcgetattr(STDIN_FILENO, &originalTermios);
+    
+    std::signal(SIGINT, sigintHandler);
 
     std::cout << "\033[?7l";
     std::cout.flush();
@@ -56,9 +71,11 @@ int main() {
         
         tcsetattr(STDIN_FILENO, TCSANOW, &originalTermios);
     std::cout << "\033[?7h\033[2J\033[1;1H\033[?25h\033[0m";
+    system("clear");
         return 1;
     }
     tcsetattr(STDIN_FILENO, TCSANOW, &originalTermios);
     std::cout << "\033[?7h\033[2J\033[1;1H\033[?25h\033[0m";
+    system("clear");
     return 0;
 }

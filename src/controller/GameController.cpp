@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstddef>
+#include <csignal>
 
 GameController::GameController(GameModel* model, GameView* view): _model(model), _view(view), _paused(false), _shouldReturnToMenu(false){
     _inputHandler = std::make_unique<InputHandler>();
@@ -20,6 +21,14 @@ void GameController::setMenuCallback(std::function<bool()> callback) {
 }
 
 void GameController::startGame() {
+
+    std::signal(SIGINT, [](int sig) {
+        std::cout << "\033[?1049l";
+        system("clear");
+        std::cout << "\033[1;36m" << "Game interrupted. Goodbye!" << "\033[0m" << std::endl;
+        std::exit(0);
+    });
+    
     std::cout << "\033[?1049h\033[2J\033[1;1H";
     std::cout.flush();
     
@@ -275,7 +284,7 @@ void GameController::startGame() {
     }
     
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    
+    std::signal(SIGINT, SIG_DFL);
     std::cout << "\033[?1049l";
     
     if (_model->isGameOver() && !_shouldReturnToMenu) {

@@ -8,6 +8,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cstdlib>
+#include <csignal>
 #include <sys/ioctl.h>
 #include <termios.h>
 
@@ -305,20 +306,56 @@ void MenuController::setPlayerName() {
     std::cout << "\033[?1049l";
     system("clear");
     
-    std::cout << "\033[1;36m" << "=== SET PLAYER NAME ===" << "\033[0m" << std::endl << std::endl;
-    std::cout << "Current name: \033[1;33m" << _playerName << "\033[0m" << std::endl;
-    std::cout << "Enter new name: ";
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int terminalWidth = w.ws_col;
+    int terminalHeight = w.ws_row;
+    
+    std::cout << "\033[2J\033[1;1H";
+    int verticalCenter = terminalHeight / 2;
+    
+    std::string title = "=== SET PLAYER NAME ===";
+    int titleX = (terminalWidth - title.length()) / 2;
+    std::cout << "\033[" << (verticalCenter - 2) << ";" << titleX << "H";
+    std::cout << "\033[1;36m" << title << "\033[0m";
+    
+    std::string currentName = "Current: \033[1;33m" + _playerName + "\033[0m";
+    int currentNameX = (terminalWidth - currentName.length()) / 2;
+    std::cout << "\033[" << (verticalCenter - 1) << ";" << currentNameX << "H";
+    std::cout << currentName;
+    
+    std::string prompt = "New name: ";
+    int promptX = (terminalWidth - prompt.length()) / 2;
+    std::cout << "\033[" << verticalCenter << ";" << promptX << "H";
+    std::cout << "\033[1;37m" << prompt << "\033[0m";
+    
+    std::cout << "\033[?25h";
+    std::cout.flush();
+    
+    int inputX = promptX + prompt.length();
+    std::cout << "\033[" << verticalCenter << ";" << inputX << "H";
     
     std::string newName;
     std::getline(std::cin, newName);
     
     if (!newName.empty()) {
         _playerName = newName;
-        std::cout << "\033[1;32m" << "Name changed to: " << _playerName << "\033[0m" << std::endl;
+        std::string successMsg = "\033[1;32m✓ Name changed!\033[0m";
+        int successX = (terminalWidth - successMsg.length()) / 2;
+        std::cout << "\033[" << (verticalCenter + 1) << ";" << successX << "H";
+        std::cout << successMsg;
+    } else {
+        std::string unchangedMsg = "\033[33m✗ Name unchanged\033[0m";
+        int unchangedX = (terminalWidth - unchangedMsg.length()) / 2;
+        std::cout << "\033[" << (verticalCenter + 1) << ";" << unchangedX << "H";
+        std::cout << unchangedMsg;
     }
     
+    std::cout.flush();
     sleep(1);
-    std::cout << "\033[?1049h";
+    
+    std::cout << "\033[?1049h\033[?25l";
+    system("clear");
 }
 void MenuController::showRules() {
     std::cout << "\033[?1049l";
@@ -444,6 +481,12 @@ void MenuController::showLeaderboard() {
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int terminalWidth = w.ws_col;
+    int terminalHeight = w.ws_row;
+    
+     int verticalPadding = terminalHeight / 6;
+    for (int i = 0; i < verticalPadding; i++) {
+        std::cout << std::endl;
+    }
     
     std::cout << "\033[1;36m";
     int titlePadding = (terminalWidth - 18) / 2;
@@ -467,9 +510,12 @@ void MenuController::showLeaderboard() {
             const auto& entry = _leaderboard[i];
             
             std::string colorCode;
-            if (i == 0) colorCode = "\033[1;33m";
-            else if (i == 1) colorCode = "\033[1;37m";
-            else if (i == 2) colorCode = "\033[1;31m";
+            if (i == 0) colorCode = "\033[1;32m";
+            else if (i == 1) colorCode = "\033[1;32m";
+            else if (i == 2) colorCode = "\033[1;32m";
+            else if (i >= 3 && i <= 5) colorCode = "\033[1;34m";
+            else if (i >= 6 && i <= 8) colorCode = "\033[1;33m";
+            else if (i == 9) colorCode = "\033[1;37m";
             else colorCode = "\033[0m";
             
             std::cout << std::string(tablePadding, ' ') 
@@ -482,24 +528,25 @@ void MenuController::showLeaderboard() {
         }
     }
     
-    std::cout << std::endl;
+    std::cout << std::endl << std::endl;
+    
     int hintPadding = (terminalWidth - 37) / 2;
     std::cout << std::string(hintPadding, ' ') << "\033[1;37m" << "Press any key to return to menu..." << "\033[0m";
     
     struct termios oldt, newt;
-    tcgetattr(STDIN_FILENO, &oldt);
+    tcgetattr(STDOUT_FILENO, &oldt);
     newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    tcsetattr(STDOUT_FILENO, TCSANOW, &newt);
     
     char input;
     read(STDIN_FILENO, &input, 1);
     
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    tcsetattr(STDOUT_FILENO, TCSANOW, &oldt);
     
+    system("clear");
     std::cout << "\033[?1049h";
 }
-
 void MenuController::saveGame(GameModel* model) {
     GameState state;
     state.playerPosition = model->getPlayerPosition();
@@ -560,6 +607,14 @@ bool MenuController::loadGame(GameModel* model) {
 }
 
 bool MenuController::runMainMenu() {
+
+    signal(SIGINT, [](int sig) {
+        std::cout << "\033[?1049l";
+        system("clear");
+        std::cout << "\033[1;36mGoodbye!\033[0m" << std::endl;
+        exit(0);
+    });
+
     std::vector<std::string> menuItems = {
         "Set Player Name",
         "Start New Game",
@@ -627,7 +682,7 @@ bool MenuController::runMainMenu() {
                         displayMenuItems(menuItems, selectedIndex);
                         break;
                     case 1:
-                        std::cout << "\033[?1049l"; 
+                        std::cout << "\033[?1049l";
                         return true;
                     case 2:
                         if (_hasSavedGame) {
@@ -674,7 +729,8 @@ bool MenuController::runMainMenu() {
             }
         }
     }
-    
+    signal(SIGINT, SIG_DFL);
     std::cout << "\033[?1049l";
+    system("clear");
     return false;
 }
