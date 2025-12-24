@@ -18,9 +18,15 @@ public:
     explicit InteractionHandler(GameModel& model);
     ~InteractionHandler() = default;
 
-    bool collideWithBasicCell(BasicCell& cell) override;
-    Position stepOnBasicCell(BasicCell& cell, const Position& position) override;
+    int collideWithBasicCell(BasicCell& cell) override;
+    Position stepOnBasicCell(BasicCell& cell, const Position& cellPos) override;
     void handleStepOnBasicCell(const Position& startPos, const Position& finalPos) override;
+
+    int collideWithTeleportCell(TeleportCell& cell) override;
+    void stepOnTeleportCell(TeleportCell& cell, const Position& cellPos) override;
+
+    int collideWithBombCell(BombCell& cell) override;
+    void stepOnBombCell(BombCell& cell, const Position& cellPos) override;
 
     const std::vector<Position>& getAffectedElements() const;
     Position getLastFinalPos() const { return _lastFinalPos; }

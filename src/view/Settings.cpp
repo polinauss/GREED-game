@@ -19,10 +19,7 @@ void Settings::updateTerminalSize() {
 }
 
 Position Settings::calculateCenteringOffsets(int gridWidth, int gridHeight) {
-
-    int visualWidth = gridWidth * 2;
-    
-    int totalWidth = visualWidth + 2;
+    int totalWidth = gridWidth * 2 + 2;
     int totalHeight = gridHeight + 2;
 
     int offsetX = (_terminalWidth - totalWidth) / 2;

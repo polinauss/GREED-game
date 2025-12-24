@@ -12,8 +12,11 @@ public:
 
     std::vector<ICell*> generateRandomGrid(int width, int height);
 
-    ICell* createBasicCell(int value, Color color);
+    ICell* createBasicCell(int value);
     ICell* createRandomCell();
+
+private:
+    Color getColor(int value);
 };
 
 #endif

@@ -5,6 +5,8 @@
 #include "model/Player.h"
 #include "model/Position.h"
 #include "model/cells/BasicCell.h"
+#include "model/cells/TeleportCell.h"
+#include "model/cells/BombCell.h"
 #include "core/Directions.h"
 #include "interfaces/ICellRenderVisitor.h"
 #include "core/Color.h"
@@ -20,6 +22,8 @@ private:
 
     std::string _playerSymbol;
     std::string _emptycellSymbol;
+    std::string _teleportCellSymbol;
+    std::string _bombCellSymbol;
     Position _offset;
 
 public:
@@ -27,6 +31,8 @@ public:
     ~ConsoleRenderer() = default;
 
     void drawBasicCell(const BasicCell& cell, const Position& pos, Color highlightColor = Color::DEFAULT) const override;
+    void drawTeleportCell(const TeleportCell& cell, const Position& pos) const override;
+    void drawBombCell(const BombCell& cell, const Position& pos) const override;
 
     void drawStartingState(const Grid& grid);
     void drawPlayer(const Position& playerPos);

@@ -12,14 +12,12 @@ class ICell {
 public:
     virtual ~ICell() = default;
 
-    virtual Color getColor() const = 0;
-    virtual int getValue() const = 0;
     virtual bool isAvailable() const = 0;
     virtual void setAvailable(bool available) = 0;
 
     virtual void acceptRender(ICellRenderVisitor& visitor, const Position& pos, Color highlightColor = Color::DEFAULT) const = 0;
-    virtual bool acceptInteractionColission(ICellInteractionVisitor& visitor) = 0;
-    virtual Position acceptInteractionStepOn(ICellInteractionVisitor& visitor, const Position& position) = 0;
+    virtual int acceptInteractionColission(ICellInteractionVisitor& visitor) = 0;
+    virtual void acceptInteractionStepOn(ICellInteractionVisitor& visitor, const Position& position) = 0;
 };
 
 #endif

@@ -74,8 +74,7 @@ void GameModel::makeMove(Direction direction) {
         return;
     }
 
-    Position finalPos = _grid[targetCellPos].acceptInteractionStepOn(_interactionHandler, targetCellPos);
-    _interactionHandler.handleStepOnBasicCell(targetCellPos, finalPos);
+    _grid[targetCellPos].acceptInteractionStepOn(_interactionHandler, targetCellPos);
 }
 
 bool GameModel::isGameOver() const {

@@ -2,16 +2,21 @@
 #include "model/GameModel.h"
 #include <cstdlib>
 
+#define FALSE 0
+#define TRUE 1
+#define BREAK 2
+
+
 InteractionHandler::InteractionHandler(GameModel& model): _model(model), _lastFinalPos(0, 0) {};
 
-bool InteractionHandler::collideWithBasicCell(BasicCell& cell) {
+int InteractionHandler::collideWithBasicCell(BasicCell& cell) {
     if (!cell.isAvailable()) 
-        return false;
+        return FALSE;
 
     _model._score += cell.getValue();
     cell.setAvailable(false);
 
-    return true;
+    return TRUE;
 }
 
 Position InteractionHandler::stepOnBasicCell(BasicCell& cell, const Position& cellPos) {
@@ -42,16 +47,93 @@ void InteractionHandler::handleStepOnBasicCell(const Position& startPos, const P
             return;
         }
 
-        bool canContinue = _model._grid[cellPos].acceptInteractionColission(*this);
-        if (!canContinue) {
-            _model._gameOver = true;
-            return;
-        } else {
-            _model._player.setPosition(cellPos);
-            _prevMoveAffectedElements.emplace_back(cellPos);
+        int canContinue = _model._grid[cellPos].acceptInteractionColission(*this);
+
+        switch (canContinue) {
+            case FALSE:
+                _model._gameOver = true;
+                return;
+                break;
+            case TRUE:
+                _model._player.setPosition(cellPos);
+                _prevMoveAffectedElements.emplace_back(cellPos);
+                break;
+            case BREAK:
+                _prevMoveAffectedElements.emplace_back(cellPos);
+                return;
+                break;                      
         }
     }
 }
+
+int InteractionHandler::collideWithTeleportCell(TeleportCell& cell) {
+    Position tpPos = cell.getTPPos();
+    int canContinue = _model._grid[tpPos].acceptInteractionColission(*this);
+    if (!canContinue) 
+        return FALSE;
+    
+    cell.setAvailable(false);
+    _model._player.setPosition(tpPos);
+    _prevMoveAffectedElements.emplace_back(tpPos);
+
+    return BREAK;
+}
+
+void InteractionHandler::stepOnTeleportCell(TeleportCell& cell, const Position& cellPos) {
+    _prevMoveAffectedElements.clear();
+    _prevMoveAffectedElements.emplace_back(_model._player.getPosition());
+
+    Position tpPos = cell.getTPPos();
+    if (!_model.isValidMove(cellPos) || !_model.isValidMove(tpPos)) {
+        _model._gameOver = true;
+        return;
+    }
+    _prevMoveAffectedElements.emplace_back(cellPos);
+    _model._player.setPosition(cellPos);
+
+    int canContinue = _model._grid[tpPos].acceptInteractionColission(*this);
+    if (!canContinue) {
+        _model._gameOver = true;
+        return;
+    }
+    
+    _model._player.setPosition(tpPos);
+    _prevMoveAffectedElements.emplace_back(tpPos);
+
+}
+
+int InteractionHandler::collideWithBombCell(BombCell& cell) {
+    if (!cell.isAvailable())
+        return FALSE;
+
+    _model._score -= _model._score * 0.2 + 9;
+    cell.setAvailable(false);
+
+    if (_model._score <= 0)
+        return FALSE;
+
+    return BREAK;
+}
+
+void InteractionHandler::stepOnBombCell(BombCell& cell, const Position& cellPos) {
+    _prevMoveAffectedElements.clear();
+    _prevMoveAffectedElements.emplace_back(_model._player.getPosition());
+
+    if (!_model.isValidMove(cellPos) || !cell.isAvailable()) {
+        _model._gameOver = true;
+        return;
+    }
+
+    _model._player.setPosition(cellPos);
+    _prevMoveAffectedElements.emplace_back(cellPos);
+    
+    int canContinue = _model._grid[cellPos].acceptInteractionColission(*this);
+    if (!canContinue) {
+        _model._gameOver = true;
+        return;
+    }
+}
+
 
 std::vector<Position> InteractionHandler::makeOver(const Position& current, const Position& target) const {
     std::vector<Position> jumpedOver;

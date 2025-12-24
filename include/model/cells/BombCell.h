@@ -1,27 +1,22 @@
-#ifndef BASICCELL
-#define BASICCELL
+#ifndef BOMBCELL
+#define BOMBCELL
 
 #include "interfaces/ICell.h"
 
-class BasicCell : public ICell {
+class BombCell: public ICell {
 private:
-    int _value;
-    Color _color;
     bool _isAvailable;
 
 public:
-    BasicCell(int value, Color color);
-    ~BasicCell() = default;
-
-    bool isAvailable() const override;
-    void setAvailable(bool available) override;
+    BombCell();
+    ~BombCell() = default;
 
     void acceptRender(ICellRenderVisitor& visitor, const Position& pos, Color highlightColor = Color::DEFAULT) const override;
     int acceptInteractionColission(ICellInteractionVisitor& visitor) override;
     void acceptInteractionStepOn(ICellInteractionVisitor& visitor, const Position& position) override;
 
-    Color getColor() const;
-    int getValue() const;
+    bool isAvailable() const override;
+    void setAvailable(bool available) override;
 };
 
 #endif

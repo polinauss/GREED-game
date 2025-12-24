@@ -3,27 +3,9 @@
 #include <ctime>
 #include <cstdlib>
 
-std::vector<ICell*> CellGenerator::generateRandomGrid(int width, int height) {
-    srand(time(NULL));
-
-    std::vector<ICell*> grid;
-    grid.reserve(width * height);
-
-    for (int i = 0; i < width * height; i++) {
-        grid.push_back(createRandomCell());
-    }
-
-    return grid;
-}
-
-ICell* CellGenerator::createBasicCell(int value, Color color) {
-    return new BasicCell(value, color);
-}
-
-ICell* CellGenerator::createRandomCell() {
-    int value = rand() % 5 + 1;
-    
+Color CellGenerator::getColor(int value) {
     Color color;
+
     switch(value) {
         case 1:
             color = Color::RED;
@@ -43,6 +25,31 @@ ICell* CellGenerator::createRandomCell() {
         default:
             color = Color::CYAN;
     }
-    
+
+    return color;
+}
+
+
+std::vector<ICell*> CellGenerator::generateRandomGrid(int width, int height) {
+    srand(time(NULL));
+
+    std::vector<ICell*> grid;
+    grid.reserve(width * height);
+
+    for (int i = 0; i < width * height; i++) {
+        grid.push_back(createRandomCell());
+    }
+
+    return grid;
+}
+
+ICell* CellGenerator::createBasicCell(int value) {
+    Color color = getColor(value);
+    return new BasicCell(value, color);
+}
+
+ICell* CellGenerator::createRandomCell() {
+    int value = rand() % 5 + 1;
+    Color color = getColor(value);
     return new BasicCell(value, color);
 }

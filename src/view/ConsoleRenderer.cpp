@@ -6,7 +6,13 @@
 #include <iostream>
 #include <sys/ioctl.h>
 
-ConsoleRenderer::ConsoleRenderer(Position offset): _offset(offset + Position(0, 1)), _playerSymbol("X "), _emptycellSymbol("  ") {
+ConsoleRenderer::ConsoleRenderer(Position offset): 
+    _offset(offset + Position(0, 1)),
+    _playerSymbol("X "),
+    _emptycellSymbol(". "),
+    _teleportCellSymbol("T "),
+    _bombCellSymbol("B ")
+{
     initializeColorCodes();
 }
 
@@ -18,12 +24,12 @@ void ConsoleRenderer::initializeColorCodes() {
     _colorCodes[Color::CYAN] = "\033[36m";
     _colorCodes[Color::MAGENTA] = "\033[35m";
     _colorCodes[Color::WHITE] = "\033[37m";
-    _colorCodes[Color::DEFAULT] = "\033[0m";
+    _colorCodes[Color::DEFAULT] =_colorCodes.at(Color::DEFAULT);
     _colorCodes[Color::BLUEHIGHLIGHT] = "\033[44;37m";
     _colorCodes[Color::REDHIGHLIGHT] = "\033[41m";
     _colorCodes[Color::BLACK] = "\033[30m";
+    _colorCodes[Color::GREENHIGHLIGHT] = "\033[42;37m";
 }
-
 std::string ConsoleRenderer::getColorCode(Color color) const {
     auto it = _colorCodes.find(color);
     if (it != _colorCodes.end()) {
@@ -60,13 +66,25 @@ void ConsoleRenderer::drawBasicCell(const BasicCell& cell, const Position& pos, 
         
         if (highlightColor != Color::DEFAULT) {
             std::cout << _colorCodes.at(highlightColor) << "\033[1m" 
-                      << cell.getValue() << " " << "\033[0m";
+                      << cell.getValue() << " " << _colorCodes.at(Color::DEFAULT);
         } else {
-            std::cout << "\033[47m" << colorCode << cell.getValue() << " " << "\033[0m";
+            std::cout << "\033[47m" << colorCode << cell.getValue() << " " << _colorCodes.at(Color::DEFAULT);
         }
     } else {
-        std::cout << "\033[47m\033[30m" << "· " << "\033[0m";
+        std::cout << "\033[47m\033[30m" << _emptycellSymbol << _colorCodes.at(Color::DEFAULT);
     }
+}
+
+void ConsoleRenderer::drawTeleportCell(const TeleportCell& cell, const Position& pos) const {
+    moveCursor(pos);
+    std::cout << _colorCodes.at(Color::GREENHIGHLIGHT) << "\033[1m" 
+        << _teleportCellSymbol << _colorCodes.at(Color::DEFAULT);
+}
+
+void ConsoleRenderer::drawBombCell(const BombCell& cell, const Position& pos) const {
+    moveCursor(pos);
+    std::cout << _colorCodes.at(Color::REDHIGHLIGHT) << "\033[1m" 
+        << _bombCellSymbol << _colorCodes.at(Color::DEFAULT);
 }
 
 void ConsoleRenderer::drawStartingState(const Grid& grid) {
@@ -88,7 +106,7 @@ void ConsoleRenderer::drawStartingState(const Grid& grid) {
         {"   ##   ", "  ###   ", " ## ##  ", "##  ##  ", "####### ", "   ##   ", "   ##   "},
         {"###### ", "##     ", "##     ", "#####  ", "    ## ", "##  ## ", " ####  "}
     };
-     std::string colors[5] = {"\033[1;31m", "\033[1;32m", "\033[1;34m", "\033[1;33m", "\033[1;35m"};
+    std::string colors[5] = {"\033[1;31m", "\033[1;32m", "\033[1;34m", "\033[1;33m", "\033[1;35m"};
      
     int maxLeftNumberWidth = 0;
     for (int i = 0; i < 5; i++) {
@@ -120,7 +138,7 @@ void ConsoleRenderer::drawStartingState(const Grid& grid) {
                     Position numPos(_offset.getX() - bigNumbers[i][row].length() - 2, currentY);
                     if (numPos.getX() >= 0) {
                         moveCursor(numPos);
-                        std::cout << colors[i] << bigNumbers[i][row] << "\033[0m";
+                        std::cout << colors[i] << bigNumbers[i][row] << _colorCodes.at(Color::DEFAULT);
                     }
                 }
             }
@@ -135,7 +153,7 @@ void ConsoleRenderer::drawStartingState(const Grid& grid) {
                     Position numPos(_offset.getX() + visualWidth + 2, currentY);
                     if (numPos.getX() + bigNumbers[i][row].length() <= terminalWidth) {
                         moveCursor(numPos);
-                        std::cout << colors[i] << bigNumbers[i][row] << "\033[0m";
+                        std::cout << colors[i] << bigNumbers[i][row] << _colorCodes.at(Color::DEFAULT);
                     }
                 }
             }
@@ -165,7 +183,7 @@ void ConsoleRenderer::drawStartingState(const Grid& grid) {
             
             std::cout << "\033[47m";
             cell.acceptRender(*this, drawPos);
-            std::cout << "\033[0m";
+            std::cout <<_colorCodes.at(Color::DEFAULT);
         }
     }
     
@@ -187,19 +205,6 @@ void ConsoleRenderer::drawStartingState(const Grid& grid) {
     std::cout.flush();
 }
 
-//    for (int row = 0; row < gridHeight; row++) {
-//        for (int col = 0; col < gridWidth; col++) {
-//            const Position& cellPos = Position(col, row);
-//           const ICell& cell = grid[cellPos];
-            
-//            Position drawPos = Position(col * 2, row) + _offset;
-            
-//            std::cout << "\033[47m";
-//           cell.acceptRender(*this, drawPos);
-//           std::cout << "\033[0m";
-//        }
-//    }
-
 void ConsoleRenderer::drawPlayer(const Position& playerPos) {
     Position drawPos = Position(_offset.getX() + playerPos.getX() * 2, _offset.getY() + playerPos.getY());
     moveCursor(drawPos);
@@ -214,7 +219,7 @@ void ConsoleRenderer::drawMove(const Grid& grid, const std::vector<Position>& af
         moveCursor(drawPos);
         std::cout << "\033[47m";
         grid[pos].acceptRender(*this, drawPos);
-        std::cout << "\033[0m";
+        std::cout <<_colorCodes.at(Color::DEFAULT);
     }
 
     std::cout.flush();
@@ -227,7 +232,7 @@ void ConsoleRenderer::highlightMoveDirection(const Grid& grid, std::vector<std::
             moveCursor(drawPos);
             std::cout << "\033[47m";
             grid[elem.second].acceptRender(*this, drawPos);
-            std::cout << "\033[0m";
+            std::cout <<_colorCodes.at(Color::DEFAULT);
         }
     }
     
@@ -253,7 +258,7 @@ void ConsoleRenderer::drawScoreAtPosition(int score, const Position& pos) const 
         scoreColor = "\033[1;32m";
     }
     
-    std::cout << "\033[1;36mScore: " << scoreColor << score << "\033[0m";
+    std::cout << "\033[1;36mScore: " << scoreColor << score << _colorCodes.at(Color::DEFAULT);
     std::cout.flush();
 }
 
@@ -270,10 +275,6 @@ void ConsoleRenderer::resetCursor() const {
     moveCursor(Position(0, w.ws_row - 1));
     std::cout.flush();
 }
-
-//void ConsoleRenderer::drawScore(int score) const {
-//    std::cout << "Score: " << score << std::endl;
-//}
 
 void ConsoleRenderer::displayWelcomeScreen() const {
 
@@ -301,13 +302,13 @@ void ConsoleRenderer::displayWelcomeScreen() const {
     for (const auto& line : titleLines) {
         int padding = (terminalWidth - line.length()) / 2;
         if (padding < 0) padding = 0;
-        std::cout << std::string(padding, ' ') << "\033[1;35m" << line << "\033[0m" << std::endl;
+        std::cout << std::string(padding, ' ') << "\033[1;35m" << line <<_colorCodes.at(Color::DEFAULT) << std::endl;
     }
     
     std::cout << std::endl;
     std::string subtitle = "A Colorful Number Jumping Adventure!";
     int subtitlePadding = (terminalWidth - subtitle.length()) / 2;
-    std::cout << std::string(subtitlePadding, ' ') << "\033[1;36m" << subtitle << "\033[0m" << std::endl << std::endl;
+    std::cout << std::string(subtitlePadding, ' ') << "\033[1;36m" << subtitle <<_colorCodes.at(Color::DEFAULT) << std::endl << std::endl;
     
     std::cout << "\033[" << (terminalHeight - 2) << ";1H";
     std::cout << "\033[1;37mPress any key to continue...\033[0m";
@@ -329,7 +330,7 @@ void ConsoleRenderer::displayGameOver() const {
     
     std::string title = "=== GAME OVER ===";
     int titlePadding = (terminalWidth - title.length()) / 2;
-    std::cout << std::string(titlePadding, ' ') << "\033[1;31m" << title << "\033[0m" << std::endl << std::endl;
+    std::cout << std::string(titlePadding, ' ') << "\033[1;31m" << title <<_colorCodes.at(Color::DEFAULT) << std::endl << std::endl;
     
     std::cout.flush();
 }

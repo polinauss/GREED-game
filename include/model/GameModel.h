@@ -7,6 +7,8 @@
 #include "model/InteractionHandler.h"
 #include "interfaces/ICell.h"
 #include "model/cells/BasicCell.h"
+#include "model/cells/TeleportCell.h"
+#include "model/cells/BombCell.h"
 #include "core/Directions.h"
 #include <iostream>
 #include <vector>
