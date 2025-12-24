@@ -19,6 +19,10 @@ struct GameState {
     std::vector<int> cellColors;
     std::vector<int> cellAvailable;
     
+    std::vector<int> cellTypes;
+    std::vector<int> teleportTargetsX;
+    std::vector<int> teleportTargetsY;
+    
     void serialize(std::ofstream& file) const;
     void deserialize(std::ifstream& file);
 };

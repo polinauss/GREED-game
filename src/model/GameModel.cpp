@@ -24,6 +24,9 @@ void GameModel::initializeGameFromState(
     const std::vector<int>& cellValues, 
     const std::vector<int>& cellColors,
     const std::vector<int>& cellAvailable,
+    const std::vector<int>& cellTypes,
+    const std::vector<int>& teleportTargetsX,
+    const std::vector<int>& teleportTargetsY,
     const Position& playerPos,
     int score) 
 {
@@ -31,7 +34,8 @@ void GameModel::initializeGameFromState(
     _player.setPosition(playerPos);
     _gameOver = false;
     
-    _grid.restoreState(cellValues, cellColors, cellAvailable);
+    _grid.restoreState(cellValues, cellColors, cellAvailable, 
+                      cellTypes, teleportTargetsX, teleportTargetsY);
     
     if (_grid.isValidPosition(playerPos)) {
         _grid.removeCell(playerPos);

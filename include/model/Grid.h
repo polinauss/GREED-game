@@ -20,8 +20,11 @@ public:
 
     void initializeRandom();
     void restoreState(const std::vector<int>& cellValues, 
-                     const std::vector<int>& cellColors,
-                     const std::vector<int>& cellAvailable);
+                 const std::vector<int>& cellColors,
+                 const std::vector<int>& cellAvailable,
+                 const std::vector<int>& cellTypes = std::vector<int>(),
+                 const std::vector<int>& teleportTargetsX = std::vector<int>(),
+                 const std::vector<int>& teleportTargetsY = std::vector<int>());
 
     ICell& operator[] (const Position& position);
     const ICell& operator[] (const Position& position) const;

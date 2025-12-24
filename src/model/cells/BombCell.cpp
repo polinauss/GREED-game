@@ -12,7 +12,7 @@ void BombCell::setAvailable(bool available) {
     _isAvailable = available;
 }
 
-void BombCell::acceptRender(ICellRenderVisitor& visitor, const Position& pos, Color highlightColor = Color::DEFAULT) const {
+void BombCell::acceptRender(ICellRenderVisitor& visitor, const Position& pos, Color highlightColor) const {
     visitor.drawBombCell(*this, pos);
 }
 
@@ -23,7 +23,6 @@ int BombCell::acceptInteractionColission(ICellInteractionVisitor& visitor) {
 void BombCell::acceptInteractionStepOn(ICellInteractionVisitor& visitor, const Position& position) {
     visitor.stepOnBombCell(*this, position);
 }
-
 
 
 

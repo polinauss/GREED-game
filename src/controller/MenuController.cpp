@@ -20,15 +20,39 @@ void GameState::serialize(std::ofstream& file) const {
     
     size_t size = cellValues.size();
     file.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
-    file.write(reinterpret_cast<const char*>(cellValues.data()), size * sizeof(int));
+    if (size > 0) {
+        file.write(reinterpret_cast<const char*>(cellValues.data()), size * sizeof(int));
+    }
     
     size = cellColors.size();
     file.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
-    file.write(reinterpret_cast<const char*>(cellColors.data()), size * sizeof(int));
+    if (size > 0) {
+        file.write(reinterpret_cast<const char*>(cellColors.data()), size * sizeof(int));
+    }
     
     size = cellAvailable.size();
     file.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
-    file.write(reinterpret_cast<const char*>(cellAvailable.data()), size * sizeof(int));
+    if (size > 0) {
+        file.write(reinterpret_cast<const char*>(cellAvailable.data()), size * sizeof(int));
+    }
+    
+    size = cellTypes.size();
+    file.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+    if (size > 0) {
+        file.write(reinterpret_cast<const char*>(cellTypes.data()), size * sizeof(int));
+    }
+    
+    size = teleportTargetsX.size();
+    file.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+    if (size > 0) {
+        file.write(reinterpret_cast<const char*>(teleportTargetsX.data()), size * sizeof(int));
+    }
+    
+    size = teleportTargetsY.size();
+    file.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+    if (size > 0) {
+        file.write(reinterpret_cast<const char*>(teleportTargetsY.data()), size * sizeof(int));
+    }
 }
 
 void GameState::deserialize(std::ifstream& file) {
@@ -40,15 +64,39 @@ void GameState::deserialize(std::ifstream& file) {
     size_t size;
     file.read(reinterpret_cast<char*>(&size), sizeof(size_t));
     cellValues.resize(size);
-    file.read(reinterpret_cast<char*>(cellValues.data()), size * sizeof(int));
+    if (size > 0) {
+        file.read(reinterpret_cast<char*>(cellValues.data()), size * sizeof(int));
+    }
     
     file.read(reinterpret_cast<char*>(&size), sizeof(size_t));
     cellColors.resize(size);
-    file.read(reinterpret_cast<char*>(cellColors.data()), size * sizeof(int));
+    if (size > 0) {
+        file.read(reinterpret_cast<char*>(cellColors.data()), size * sizeof(int));
+    }
     
     file.read(reinterpret_cast<char*>(&size), sizeof(size_t));
     cellAvailable.resize(size);
-    file.read(reinterpret_cast<char*>(cellAvailable.data()), size * sizeof(int));
+    if (size > 0) {
+        file.read(reinterpret_cast<char*>(cellAvailable.data()), size * sizeof(int));
+    }
+    
+    file.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+    cellTypes.resize(size);
+    if (size > 0) {
+        file.read(reinterpret_cast<char*>(cellTypes.data()), size * sizeof(int));
+    }
+    
+    file.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+    teleportTargetsX.resize(size);
+    if (size > 0) {
+        file.read(reinterpret_cast<char*>(teleportTargetsX.data()), size * sizeof(int));
+    }
+    
+    file.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+    teleportTargetsY.resize(size);
+    if (size > 0) {
+        file.read(reinterpret_cast<char*>(teleportTargetsY.data()), size * sizeof(int));
+    }
 }
 
 MenuController::MenuController() : _playerName("Player"), _hasSavedGame(false), _lastSelectedOption(-1) {
@@ -548,7 +596,7 @@ void MenuController::showLeaderboard() {
     std::cout << "\033[?1049h";
 }
 void MenuController::saveGame(GameModel* model) {
-     GameState state;
+    GameState state;
     state.playerPosition = model->getPlayerPosition();
     state.score = model->getScore();
     
@@ -557,17 +605,60 @@ void MenuController::saveGame(GameModel* model) {
     state.height = grid.getHeight();
     
     int totalCells = state.width * state.height;
+    
+    state.cellValues.clear();
+    state.cellColors.clear();
+    state.cellAvailable.clear();
+    state.cellTypes.clear();
+    state.teleportTargetsX.clear();
+    state.teleportTargetsY.clear();
+    
     state.cellValues.reserve(totalCells);
     state.cellColors.reserve(totalCells);
     state.cellAvailable.reserve(totalCells);
+    state.cellTypes.reserve(totalCells);
+    state.teleportTargetsX.reserve(totalCells);
+    state.teleportTargetsY.reserve(totalCells);
     
     for (int y = 0; y < state.height; y++) {
         for (int x = 0; x < state.width; x++) {
             Position pos(x, y);
             const ICell& cell = grid[pos];
             
-            state.cellValues.push_back(cell.getValue());
-            state.cellColors.push_back(static_cast<int>(cell.getColor()));
+            if (dynamic_cast<const TeleportCell*>(&cell)) {
+                const TeleportCell* teleportCell = static_cast<const TeleportCell*>(&cell);
+                state.cellTypes.push_back(1);
+                
+                Position tpPos = teleportCell->getTPPos();
+                state.teleportTargetsX.push_back(tpPos.getX());
+                state.teleportTargetsY.push_back(tpPos.getY());
+                
+                state.cellValues.push_back(0);
+                state.cellColors.push_back(static_cast<int>(Color::GREEN));
+            }
+            else if (dynamic_cast<const BombCell*>(&cell)) {
+                state.cellTypes.push_back(2);
+                state.teleportTargetsX.push_back(0);
+                state.teleportTargetsY.push_back(0);
+                
+                state.cellValues.push_back(0);
+                state.cellColors.push_back(static_cast<int>(Color::RED));
+            }
+            else {
+                const BasicCell* basicCell = dynamic_cast<const BasicCell*>(&cell);
+                state.cellTypes.push_back(0);
+                state.teleportTargetsX.push_back(0);
+                state.teleportTargetsY.push_back(0);
+                
+                if (basicCell) {
+                    state.cellValues.push_back(basicCell->getValue());
+                    state.cellColors.push_back(static_cast<int>(basicCell->getColor()));
+                } else {
+                    state.cellValues.push_back(0);
+                    state.cellColors.push_back(0);
+                }
+            }
+            
             state.cellAvailable.push_back(cell.isAvailable() ? 1 : 0);
         }
     }
@@ -578,14 +669,13 @@ void MenuController::saveGame(GameModel* model) {
         file.close();
         _hasSavedGame = true;
         
-        std::cout << "\033[1;32m" << "Game saved successfully!" << "\033[0m" << std::endl;
+        std::cout << "\033[1;32mGame saved successfully!\033[0m" << std::endl;
         sleep(1);
     } else {
-        std::cout << "\033[1;31m" << "Failed to save game!" << "\033[0m" << std::endl;
+        std::cout << "\033[1;31mFailed to save game!\033[0m" << std::endl;
         sleep(1);
     }
 }
-
 
 bool MenuController::runMainMenu() {
 
@@ -715,10 +805,10 @@ bool MenuController::runMainMenu() {
     system("clear");
     return false;
 }
+
 bool MenuController::loadGame(GameModel* model) {
     std::ifstream loadFile(SAVE_FILE, std::ios::binary);
     if (!loadFile.is_open()) {
-        std::cout << "DEBUG: Не могу открыть файл сохранения" << std::endl;
         return false;
     }
     
@@ -726,17 +816,19 @@ bool MenuController::loadGame(GameModel* model) {
     state.deserialize(loadFile);
     loadFile.close();
     
-    std::cout << "DEBUG: Загружаю игру: score=" << state.score 
-              << ", playerPos=(" << state.playerPosition.getX() 
-              << "," << state.playerPosition.getY() << ")" << std::endl;
-    
     try {
-        model->initializeGameFromState(state.cellValues, state.cellColors, 
-                                      state.cellAvailable, state.playerPosition, state.score);
-        std::cout << "DEBUG: Игра успешно загружена!" << std::endl;
+        model->initializeGameFromState(
+            state.cellValues,
+            state.cellColors,
+            state.cellAvailable,
+            state.cellTypes,
+            state.teleportTargetsX,
+            state.teleportTargetsY,
+            state.playerPosition,
+            state.score
+        );
         return true;
     } catch (...) {
-        std::cout << "DEBUG: Ошибка при загрузке игры" << std::endl;
         return false;
     }
 }

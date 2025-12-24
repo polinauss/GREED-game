@@ -1,5 +1,7 @@
 #include "model/Grid.h"
 #include "model/cells/BasicCell.h"
+#include "model/cells/TeleportCell.h"
+#include "model/cells/BombCell.h"
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
@@ -27,24 +29,45 @@ void Grid::initializeRandom() {
 
 void Grid::restoreState(const std::vector<int>& cellValues, 
                        const std::vector<int>& cellColors,
-                       const std::vector<int>& cellAvailable) {
+                       const std::vector<int>& cellAvailable,
+                       const std::vector<int>& cellTypes,
+                       const std::vector<int>& teleportTargetsX,
+                       const std::vector<int>& teleportTargetsY) {
     clearCells();
     
     int totalCells = _width * _height;
     if (cellValues.size() != static_cast<size_t>(totalCells) ||
         cellColors.size() != static_cast<size_t>(totalCells) ||
-        cellAvailable.size() != static_cast<size_t>(totalCells)) {
+        cellAvailable.size() != static_cast<size_t>(totalCells) ||
+        cellTypes.size() != static_cast<size_t>(totalCells) ||
+        teleportTargetsX.size() != static_cast<size_t>(totalCells) ||
+        teleportTargetsY.size() != static_cast<size_t>(totalCells)) {
         throw std::runtime_error("Invalid grid state data");
     }
     
     for (int i = 0; i < totalCells; i++) {
-        int value = cellValues[i];
-        Color color = static_cast<Color>(cellColors[i]);
+        int type = cellTypes[i];
         bool available = cellAvailable[i] != 0;
         
-        BasicCell* cell = new BasicCell(value, color);
-        cell->setAvailable(available);
-        _cells.push_back(cell);
+        if (type == 1) { // TeleportCell
+            int targetX = teleportTargetsX[i];
+            int targetY = teleportTargetsY[i];
+            TeleportCell* teleportCell = new TeleportCell(Position(targetX, targetY));
+            teleportCell->setAvailable(available);
+            _cells.push_back(teleportCell);
+        }
+        else if (type == 2) { // BombCell
+            BombCell* bombCell = new BombCell();
+            bombCell->setAvailable(available);
+            _cells.push_back(bombCell);
+        }
+        else { // BasicCell
+            int value = cellValues[i];
+            Color color = static_cast<Color>(cellColors[i]);
+            BasicCell* cell = new BasicCell(value, color);
+            cell->setAvailable(available);
+            _cells.push_back(cell);
+        }
     }
 }
 

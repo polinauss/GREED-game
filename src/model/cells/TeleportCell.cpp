@@ -27,5 +27,3 @@ int TeleportCell::acceptInteractionColission(ICellInteractionVisitor& visitor) {
 void TeleportCell::acceptInteractionStepOn(ICellInteractionVisitor& visitor, const Position& position) {
     visitor.stepOnTeleportCell(*this, position);
 }
-
-

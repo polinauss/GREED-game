@@ -32,10 +32,13 @@ public:
 
     void initializeGame();
     void initializeGameFromState(const std::vector<int>& cellValues, 
-                                const std::vector<int>& cellColors,
-                                const std::vector<int>& cellAvailable,
-                                const Position& playerPos,
-                                int score);
+                            const std::vector<int>& cellColors,
+                            const std::vector<int>& cellAvailable,
+                            const std::vector<int>& cellTypes,
+                            const std::vector<int>& teleportTargetsX,
+                            const std::vector<int>& teleportTargetsY,
+                            const Position& playerPos,
+                            int score);
     bool isValidMove(Position position) const;
     void makeMove(Direction direction);
     bool isGameOver() const;
