@@ -17,6 +17,8 @@ ConsoleRenderer::ConsoleRenderer(Position offset):
 }
 
 void ConsoleRenderer::initializeColorCodes() {
+    _colorCodes[Color::DEFAULT] = "\033[0m";
+
     _colorCodes[Color::RED] = "\033[31m";
     _colorCodes[Color::GREEN] = "\033[32m";
     _colorCodes[Color::BLUE] = "\033[34m";

@@ -352,7 +352,8 @@ void MenuController::displayMenuItems(const std::vector<std::string>& items, int
 
 void MenuController::setPlayerName() {
     std::cout << "\033[?1049l";
-    system("clear");
+    std::cout << "\033[2J\033[1;1H";
+    std::cout.flush();
     
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -402,17 +403,20 @@ void MenuController::setPlayerName() {
     std::cout.flush();
     sleep(1);
     
-    std::cout << "\033[?1049h\033[?25l";
-    system("clear");
+    std::cout << "\033[?1049h\033[2J\033[1;1H";
+    std::cout.flush();
 }
 void MenuController::showRules() {
     std::cout << "\033[?1049l";
-    system("clear");
+    std::cout << "\033[2J\033[1;1H";
+    std::cout.flush();
     
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int terminalWidth = w.ws_col;
     int terminalHeight = w.ws_row;
+    
+    std::cout << "\033[2J\033[1;1H";
     
     int verticalPadding = terminalHeight / 6;
     for (int i = 0; i < verticalPadding; i++) {
@@ -464,7 +468,8 @@ void MenuController::showRules() {
     
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
     
-    std::cout << "\033[?1049h";
+    std::cout << "\033[?1049h\033[2J\033[1;1H";
+    std::cout.flush();
 }
 
 void MenuController::loadLeaderboard() {
@@ -524,12 +529,15 @@ void MenuController::addToLeaderboard(int score) {
 
 void MenuController::showLeaderboard() {
     std::cout << "\033[?1049l";
-    system("clear");
+    std::cout << "\033[2J\033[1;1H";
+    std::cout.flush();
     
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int terminalWidth = w.ws_col;
     int terminalHeight = w.ws_row;
+    
+    std::cout << "\033[2J\033[1;1H";
     
      int verticalPadding = terminalHeight / 6;
     for (int i = 0; i < verticalPadding; i++) {
@@ -592,8 +600,8 @@ void MenuController::showLeaderboard() {
     
     tcsetattr(STDOUT_FILENO, TCSANOW, &oldt);
     
-    system("clear");
-    std::cout << "\033[?1049h";
+    std::cout << "\033[?1049h\033[2J\033[1;1H";
+    std::cout.flush();
 }
 void MenuController::saveGame(GameModel* model) {
     GameState state;
@@ -678,6 +686,9 @@ void MenuController::saveGame(GameModel* model) {
 }
 
 bool MenuController::runMainMenu() {
+
+    std::cout << "\033[?1049h\033[2J\033[1;1H";
+    std::cout.flush();
 
     signal(SIGINT, [](int sig) {
         std::cout << "\033[?1049l";
@@ -833,3 +844,29 @@ bool MenuController::loadGame(GameModel* model) {
     }
 }
 
+void MenuController::showWelcomeScreen() {
+    std::cout << "\033[?1049h";
+    std::cout << "\033[2J\033[1;1H";
+    
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int terminalWidth = w.ws_col;
+    int terminalHeight = w.ws_row;
+    
+    drawAsciiTitle();
+    
+    std::cout << "\033[" << (terminalHeight - 2) << ";1H";
+    std::cout << "\033[1;37mPress any key to continue...\033[0m";
+    std::cout.flush();
+    
+    struct termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    
+    char input;
+    read(STDIN_FILENO, &input, 1);
+    
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+}
