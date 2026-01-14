@@ -215,9 +215,9 @@ void GameController::startGame() {
             
             int score = _model->getScore();
             std::string scoreColorCode;
-            if (score >= 0 && score <= 300) {
+            if (score >= 0 && score <= 100) {
                 scoreColorCode = "\033[1;31m";
-            } else if (score >= 301 && score <= 700) {
+            } else if (score >= 101 && score <= 200) {
                 scoreColorCode = "\033[1;33m";
             } else {
                 scoreColorCode = "\033[1;32m";

@@ -262,9 +262,9 @@ void ConsoleRenderer::highlightMoveDirection(const Grid& grid, std::vector<std::
 void ConsoleRenderer::drawScoreAtPosition(int score, const Position& pos) const {
     moveCursor(pos);
     std::string scoreColor;
-    if (score >= 0 && score <= 300) {
+    if (score >= 0 && score <= 100) {
         scoreColor = "\033[1;31m";
-    } else if (score >= 301 && score <= 700) {
+    } else if (score >= 101 && score <= 200) {
         scoreColor = "\033[1;33m";
     } else {
         scoreColor = "\033[1;32m";
