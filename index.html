@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greed Game - Colorful Number Jumping Adventure</title>
+    <style>
+        /* Основные стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        /* Шапка */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+
+        /* Основной контент */
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin: 20px 0 10px 0;
+        }
+
+        /* Код */
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+        }
+
+        code {
+            background: #f1f3f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Таблицы */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th, table td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: left;
+        }
+
+        table th {
+            background: #667eea;
+            color: white;
+        }
+
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        /* Списки */
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        /* Кнопки */
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Футер */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            border-top: 1px solid #dee2e6;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .header {
+                padding: 25px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Greed Game</h1>
+            <div class="subtitle">Colorful Number Jumping Adventure</div>
+            
+            <div class="badges">
+                <span class="badge">C++17</span>
+                <span class="badge">Console Game</span>
+                <span class="badge">Linux/Unix</span>
+                <span class="badge">MIT License</span>
+            </div>
+            
+            <div class="buttons">
+                <a href="https://github.com/YOUR_USERNAME/greed-game" target="_blank" class="btn">
+                    📁 View on GitHub
+                </a>
+                <a href="./docs/html/index.html" class="btn">
+                    📚 View Documentation
+                </a>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>📋 About the Game</h2>
+                <p><strong>Greed</strong> is a console-based strategic game where players navigate a colorful grid, jumping on numbered cells to accumulate points while avoiding bombs and using teleporters for tactical movement.</p>
+            </div>
+            
+            <div class="section">
+                <h2>🚀 Quick Start</h2>
+                <h3>Requirements:</h3>
+                <ul>
+                    <li><strong>C++17 Compiler</strong> (g++ 7+ or clang++)</li>
+                    <li><strong>CMake 3.12+</strong></li>
+                    <li><strong>Linux/Unix terminal</strong> with ANSI color support</li>
+                </ul>
+                
+                <h3>Installation:</h3>
+                <pre><code># Clone repository
+git clone https://github.com/polinauss/GREED-game.git
+cd greed-game
+
+# Build with CMake
+mkdir build && cd build
+cmake .. && make
+
+# Run the game
+./greed_game</code></pre>
+            </div>
+            
+            <div class="section">
+                <h2>🎮 Gameplay</h2>
+                <h3>Controls:</h3>
+                <table>
+                    <tr><th>Key</th><th>Action</th></tr>
+                    <tr><td><code>W / ↑</code></td><td>Move Up</td></tr>
+                    <tr><td><code>A / ←</code></td><td>Move Left</td></tr>
+                    <tr><td><code>S / ↓</code></td><td>Move Down</td></tr>
+                    <tr><td><code>D / →</code></td><td>Move Right</td></tr>
+                    <tr><td><code>P</code></td><td>Pause Game</td></tr>
+                    <tr><td><code>S</code></td><td>Save Game</td></tr>
+                    <tr><td><code>M</code></td><td>Main Menu</td></tr>
+                    <tr><td><code>ESC</code></td><td>Exit Game</td></tr>
+                </table>
+                
+                <h3>Cell Types:</h3>
+                <table>
+                    <tr><th>Cell</th><th>Color</th><th>Value</th><th>Effect</th></tr>
+                    <tr><td><code>1</code></td><td>🔴 Red</td><td>1 point</td><td>Jump 1 cell</td></tr>
+                    <tr><td><code>2</code></td><td>🟢 Green</td><td>2 points</td><td>Jump 2 cells</td></tr>
+                    <tr><td><code>3</code></td><td>🔵 Blue</td><td>3 points</td><td>Jump 3 cells</td></tr>
+                    <tr><td><code>4</code></td><td>🟡 Yellow</td><td>4 points</td><td>Jump 4 cells</td></tr>
+                    <tr><td><code>5</code></td><td>🟣 Purple</td><td>5 points</td><td>Jump 5 cells</td></tr>
+                    <tr><td><code>B</code></td><td>💣 Bomb</td><td>-20% -9</td><td>Deducts points</td></tr>
+                    <tr><td><code>T</code></td><td>🌀 Teleport</td><td>0</td><td>Random teleport</td></tr>
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2> Project Structure</h2>
+                <pre><code>greed-game/
+├── src/              # Source code
+├── include/          # Header files
+├── docs/            # Documentation
+├── CMakeLists.txt   # CMake configuration
+├── Doxyfile         # Documentation config
+├── index.html       # This file
+└── README.md        # Project README</code></pre>
+            </div>
+            
+            <div class="section">
+                <h2>📚 Documentation</h2>
+                <p>Generate documentation with Doxygen:</p>
+                <pre><code># Install Doxygen and Graphviz
+sudo apt install doxygen graphviz
+
+# Generate documentation
+doxygen Doxyfile
+
+# Open documentation
+xdg-open docs/html/index.html</code></pre>
+                
+                <div class="buttons">
+                    <a href="./docs/html/index.html" class="btn">
+                        📖 View Generated Docs
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2024 Greed Game Project | MIT License</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                Replace <code>polinauss and alexeyphov</code> with your actual GitHub username
+            </p>
+        </div>
+    </div>
+</body>
+</html>
