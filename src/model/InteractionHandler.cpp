@@ -4,7 +4,8 @@
 
 #define FALSE 0
 #define TRUE 1
-#define BREAK 2
+#define BOMB 2
+#define TP 3
 
 
 InteractionHandler::InteractionHandler(GameModel& model): _model(model), _lastFinalPos(0, 0) {};
@@ -58,10 +59,15 @@ void InteractionHandler::handleStepOnBasicCell(const Position& startPos, const P
                 _model._player.setPosition(cellPos);
                 _prevMoveAffectedElements.emplace_back(cellPos);
                 break;
-            case BREAK:
+            case BOMB:
+                _model._player.setPosition(cellPos);
                 _prevMoveAffectedElements.emplace_back(cellPos);
                 return;
-                break;                      
+                break;
+            case TP:
+                _prevMoveAffectedElements.emplace_back(cellPos);
+                return;
+                break;
         }
     }
 }
@@ -76,7 +82,7 @@ int InteractionHandler::collideWithTeleportCell(TeleportCell& cell) {
     _model._player.setPosition(tpPos);
     _prevMoveAffectedElements.emplace_back(tpPos);
 
-    return BREAK;
+    return TP;
 }
 
 void InteractionHandler::stepOnTeleportCell(TeleportCell& cell, const Position& cellPos) {
@@ -88,6 +94,8 @@ void InteractionHandler::stepOnTeleportCell(TeleportCell& cell, const Position& 
         _model._gameOver = true;
         return;
     }
+    cell.setAvailable(false);   
+
     _prevMoveAffectedElements.emplace_back(cellPos);
     _model._player.setPosition(cellPos);
 
@@ -112,7 +120,7 @@ int InteractionHandler::collideWithBombCell(BombCell& cell) {
     if (_model._score <= 0)
         return FALSE;
 
-    return BREAK;
+    return BOMB;
 }
 
 void InteractionHandler::stepOnBombCell(BombCell& cell, const Position& cellPos) {

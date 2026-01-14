@@ -79,14 +79,24 @@ void ConsoleRenderer::drawBasicCell(const BasicCell& cell, const Position& pos, 
 
 void ConsoleRenderer::drawTeleportCell(const TeleportCell& cell, const Position& pos) const {
     moveCursor(pos);
-    std::cout << _colorCodes.at(Color::GREENHIGHLIGHT) << "\033[1m" 
-        << _teleportCellSymbol << _colorCodes.at(Color::DEFAULT);
+
+    if (cell.isAvailable()) {
+        std::cout << _colorCodes.at(Color::GREENHIGHLIGHT) << "\033[1m" 
+        << _teleportCellSymbol << _colorCodes.at(Color::DEFAULT);    
+    } else {
+        std::cout << "\033[47m\033[30m" << _emptycellSymbol << _colorCodes.at(Color::DEFAULT);
+    }
 }
 
 void ConsoleRenderer::drawBombCell(const BombCell& cell, const Position& pos) const {
     moveCursor(pos);
-    std::cout << _colorCodes.at(Color::REDHIGHLIGHT) << "\033[1m" 
+
+    if (cell.isAvailable()) {
+        std::cout << _colorCodes.at(Color::REDHIGHLIGHT) << "\033[1m" 
         << _bombCellSymbol << _colorCodes.at(Color::DEFAULT);
+    } else {
+        std::cout << "\033[47m\033[30m" << _emptycellSymbol << _colorCodes.at(Color::DEFAULT);
+    }
 }
 
 void ConsoleRenderer::drawStartingState(const Grid& grid) {

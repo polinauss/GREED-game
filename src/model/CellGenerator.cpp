@@ -1,5 +1,8 @@
 #include "model/CellGenerator.h"
 #include "model/cells/BasicCell.h"
+#include "model/cells/BombCell.h"
+#include "model/cells/TeleportCell.h"
+#include <cmath>
 #include <ctime>
 #include <cstdlib>
 
@@ -29,17 +32,79 @@ Color CellGenerator::getColor(int value) {
     return color;
 }
 
-
 std::vector<ICell*> CellGenerator::generateRandomGrid(int width, int height) {
     srand(time(NULL));
-
+    
     std::vector<ICell*> grid;
     grid.reserve(width * height);
+    
+    float centerX = (width - 1) / 2.0f;
+    float centerY = (height - 1) / 2.0f;
+    float maxDistance = sqrt(centerX * centerX + centerY * centerY);
 
-    for (int i = 0; i < width * height; i++) {
-        grid.push_back(createRandomCell());
+    int bombCellsCount = 0;
+    int teleportCellsCount = 0;
+    int totalCells = width * height;
+    
+    int maxBombCells = totalCells / 12;
+    int maxTeleportCells = totalCells / 12;
+    
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            float dx = x - centerX;
+            float dy = y - centerY;
+            float distance = sqrt(dx * dx + dy * dy);
+            
+            float normalizedDistance = distance / maxDistance;
+            float invertedDistance = 1.0f - normalizedDistance * normalizedDistance;
+            
+            int value;
+            if (invertedDistance > 0.8f) {
+                value = 4 + rand() % 2;
+            } else if (invertedDistance > 0.5f) {
+                value = 3 + rand() % 2;
+            } else if (invertedDistance > 0.2f) {
+                value = 2 + rand() % 2;
+            } else {
+                value = 1 + rand() % 2;
+            }
+            
+            bool createSpecialCell = false;
+            int cellType = 0; 
+            
+            if (bombCellsCount < maxBombCells && rand() % 12 == 0) {
+                createSpecialCell = true;
+                cellType = 1;
+                bombCellsCount++;
+            } 
+            else if (teleportCellsCount < maxTeleportCells && rand() % 15 == 0) {
+                createSpecialCell = true;
+                cellType = 2;
+                teleportCellsCount++;
+            }
+            
+            if (createSpecialCell) {
+                if (cellType == 1) {
+                    grid.push_back(new BombCell());
+                } 
+                else if (cellType == 2) {
+                    int targetX = rand() % width;
+                    int targetY = rand() % height;
+                    
+                    if (targetX == x && targetY == y) {
+                        targetX = (x + 1) % width;
+                    }
+                    
+                    grid.push_back(new TeleportCell(Position(targetX, targetY)));
+                }
+            } 
+            else {
+                Color color = getColor(value);
+                grid.push_back(new BasicCell(value, color));
+            }
+        }
     }
-
+    
     return grid;
 }
 
