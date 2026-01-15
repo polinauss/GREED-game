@@ -201,7 +201,6 @@ void MenuController::displayMenuItems(const std::vector<std::string>& items, int
         return;
     }
 
-
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int terminalWidth = w.ws_col;
@@ -210,7 +209,10 @@ void MenuController::displayMenuItems(const std::vector<std::string>& items, int
     std::cout << "\033[2J\033[1;1H";
     std::cout.flush();
     
+    // Включаем альтернативный буфер для предотвращения прокрутки
     std::cout << "\033[?1049h";
+    // Отключаем прокрутку терминала
+    std::cout << "\033[?7l";
     
     std::vector<std::string> titleLines = {
         " ######   ########  ########  ########  #######  ",
@@ -412,20 +414,32 @@ void MenuController::displayMenuItems(const std::vector<std::string>& items, int
 }
 
 void MenuController::setPlayerName() {
-    globalMenuController = nullptr;
-
-    std::cout << "\033[?1049l";
-    std::cout << "\033[2J\033[1;1H";
+    // Сохраняем предыдущее состояние терминала
+    struct termios oldt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    
+    // Выходим из альтернативного буфера и очищаем все
+    std::cout << "\033[?1049l";  // Выход из альтернативного буфера
+    std::cout << "\033[2J\033[3J\033[1;1H";  // Очищаем экран и историю прокрутки
     std::cout.flush();
+    
+    // Включаем нормальный режим терминала для ввода
+    struct termios newt = oldt;
+    newt.c_lflag |= (ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
     
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int terminalWidth = w.ws_col;
     int terminalHeight = w.ws_row;
     
-    std::cout << "\033[2J\033[1;1H";
+    // Очищаем полностью
+    std::cout << "\033[2J\033[3J\033[1;1H";
+    std::cout.flush();
+    
     int verticalCenter = terminalHeight / 2;
     
+    // Выводим заголовок
     std::string title = "=== SET PLAYER NAME ===";
     int titleX = (terminalWidth - title.length()) / 2;
     std::cout << "\033[" << (verticalCenter - 2) << ";" << titleX << "H";
@@ -441,7 +455,7 @@ void MenuController::setPlayerName() {
     std::cout << "\033[" << verticalCenter << ";" << promptX << "H";
     std::cout << "\033[1;37m" << prompt << "\033[0m";
     
-    std::cout << "\033[?25h";
+    std::cout << "\033[?25h";  // Показываем курсор
     std::cout.flush();
     
     int inputX = promptX + prompt.length();
@@ -466,20 +480,22 @@ void MenuController::setPlayerName() {
     std::cout.flush();
     sleep(1);
     
-    std::cout << "\033[?1049h\033[2J\033[1;1H";
+    // Полностью очищаем экран перед возвратом
+    std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
-
-    globalMenuController = this;
-}    
-
-
+    
+    // Восстанавливаем терминальный режим
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+}
 
 void MenuController::showRules() {
-    globalMenuController = nullptr;
-
-
-    std::cout << "\033[?1049l";
-    std::cout << "\033[2J\033[1;1H";
+    // Сохраняем предыдущее состояние терминала
+    struct termios oldt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    
+    // Выходим из альтернативного буфера и очищаем все
+    std::cout << "\033[?1049l";  // Выход из альтернативного буфера
+    std::cout << "\033[2J\033[3J\033[1;1H";  // Очищаем экран и историю прокрутки
     std::cout.flush();
     
     struct winsize w;
@@ -487,22 +503,20 @@ void MenuController::showRules() {
     int terminalWidth = w.ws_col;
     int terminalHeight = w.ws_row;
     
-    std::cout << "\033[2J\033[1;1H";
+    // Полностью очищаем
+    std::cout << "\033[2J\033[3J\033[1;1H";
+    std::cout.flush();
     
     int verticalPadding = terminalHeight / 6;
-    for (int i = 0; i < verticalPadding; i++) {
-        std::cout << std::endl;
-    }
     
     std::string title = "=== GAME RULES ===";
     int titlePadding = (terminalWidth - title.length()) / 2;
-    std::cout << std::string(titlePadding, ' ') << "\033[1;36m" << title << "\033[0m" << std::endl << std::endl;
+    std::cout << "\033[" << verticalPadding << ";" << titlePadding << "H";
+    std::cout << "\033[1;36m" << title << "\033[0m" << std::endl << std::endl;
     
     std::vector<std::string> rules = {
-        "\033[1;33m\033[0m",
         "Jump on colored cells to score points!",
         "",
-        
         "\033[1;33mObjective:\033[0m",
         "Score 200+ points to WIN the game!",
         "After winning, you can continue playing to set new records.",
@@ -528,36 +542,39 @@ void MenuController::showRules() {
         "\033[1;33mSkill Levels:\033[0m",
         "\033[31mBEGINNER: 0-99 points\033[0m",
         "\033[33mADVANCED: 100-199 points\033[0m", 
-        "\033[32mWINNER: 200+ points (VICTORY!)\033[0m",
-        ""
+        "\033[32mWINNER: 200+ points (VICTORY!)\033[0m"
     };
     
+    int currentY = verticalPadding + 2;
     for (const auto& rule : rules) {
         int padding = (terminalWidth - rule.length()) / 2;
         if (padding < 0) padding = 0;
-        std::cout << std::string(padding, ' ') << rule << std::endl;
+        std::cout << "\033[" << currentY << ";" << padding << "H";
+        std::cout << rule;
+        currentY++;
     }
     
     std::string hint = "\033[1;37mPress any key to return to menu...\033[0m";
     int hintPadding = (terminalWidth - hint.length()) / 2;
-    std::cout << std::string(hintPadding, ' ') << hint << std::endl;
+    std::cout << "\033[" << (terminalHeight - 2) << ";" << hintPadding << "H";
+    std::cout << hint;
     
-    struct termios oldt, newt;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
+    std::cout.flush();
+    
+    // Устанавливаем неканонический режим для ожидания нажатия
+    struct termios newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
     
     char input;
     read(STDIN_FILENO, &input, 1);
     
+    // Восстанавливаем оригинальный режим
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
     
-    std::cout << "\033[?1049h\033[2J\033[1;1H";
+    // Полностью очищаем перед возвратом
+    std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
-
-
-    globalMenuController = this;
 }
 
 void MenuController::loadLeaderboard() {
@@ -614,12 +631,14 @@ void MenuController::addToLeaderboard(int score) {
     
     saveLeaderboard();
 }
-
 void MenuController::showLeaderboard() {
-    globalMenuController = this;
-
-    std::cout << "\033[?1049l";
-    std::cout << "\033[2J\033[1;1H";
+    // Сохраняем предыдущее состояние терминала
+    struct termios oldt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    
+    // Выходим из альтернативного буфера и очищаем все
+    std::cout << "\033[?1049l";  // Выход из альтернативного буфера
+    std::cout << "\033[2J\033[3J\033[1;1H";  // Очищаем экран и историю прокрутки
     std::cout.flush();
     
     struct winsize w;
@@ -627,13 +646,13 @@ void MenuController::showLeaderboard() {
     int terminalWidth = w.ws_col;
     int terminalHeight = w.ws_row;
     
-    std::cout << "\033[2J\033[1;1H";
+    // Полностью очищаем
+    std::cout << "\033[2J\033[3J\033[1;1H";
+    std::cout.flush();
     
-     int verticalPadding = terminalHeight / 6;
-    for (int i = 0; i < verticalPadding; i++) {
-        std::cout << std::endl;
-    }
+    int verticalPadding = terminalHeight / 6;
     
+    std::cout << "\033[" << verticalPadding << ";1H";
     std::cout << "\033[1;36m";
     int titlePadding = (terminalWidth - 18) / 2;
     std::cout << std::string(titlePadding, ' ') << "=== LEADERBOARD ===" << "\033[0m" << std::endl << std::endl;
@@ -672,27 +691,29 @@ void MenuController::showLeaderboard() {
                       << entry.date
                       << "\033[0m" << std::endl;
         }
-
-        globalMenuController = this;
     }
     
     std::cout << std::endl << std::endl;
     
     int hintPadding = (terminalWidth - 37) / 2;
-    std::cout << std::string(hintPadding, ' ') << "\033[1;37m" << "Press any key to return to menu..." << "\033[0m";
+    std::cout << "\033[" << (terminalHeight - 2) << ";" << hintPadding << "H";
+    std::cout << "\033[1;37m" << "Press any key to return to menu..." << "\033[0m";
     
-    struct termios oldt, newt;
-    tcgetattr(STDOUT_FILENO, &oldt);
-    newt = oldt;
+    std::cout.flush();
+    
+    // Устанавливаем неканонический режим для ожидания нажатия
+    struct termios newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDOUT_FILENO, TCSANOW, &newt);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
     
     char input;
     read(STDIN_FILENO, &input, 1);
     
-    tcsetattr(STDOUT_FILENO, TCSANOW, &oldt);
+    // Восстанавливаем оригинальный режим
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
     
-    std::cout << "\033[?1049h\033[2J\033[1;1H";
+    // Полностью очищаем перед возвратом
+    std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
 }
 
@@ -776,16 +797,21 @@ void MenuController::saveGame(GameModel* model) {
         std::cout << "\033[1;31mFailed to save game!\033[0m" << std::endl;
         sleep(1);
     }
+    
 }
+
 
 bool MenuController::runMainMenu() {
     std::cout << "\033[?1049h\033[2J\033[1;1H";
     std::cout.flush();
 
-    // Устанавливаем глобальный указатель
+    std::cout << "\033[?1049h";
+    std::cout << "\033[?7l";
+
     globalMenuController = this;
 
     signal(SIGINT, [](int sig) {
+        std::cout << "\033[?7h";
         std::cout << "\033[?1049l";
         system("clear");
         std::cout << "\033[1;36mGoodbye!\033[0m" << std::endl;
@@ -813,7 +839,6 @@ bool MenuController::runMainMenu() {
     
     int selectedIndex = 0;
     
-    // Первоначальная отрисовка
     displayMenuItems(menuItems, selectedIndex);
     
     while (true) {
@@ -856,25 +881,26 @@ bool MenuController::runMainMenu() {
             else if (input == '\n' || input == '\r' || input == ' ') { 
                 _lastSelectedOption = selectedIndex;
                 
-                // Временно сбрасываем глобальный указатель перед подменю
-                globalMenuController = nullptr;
-                
                 switch(selectedIndex) {
                     case 0:
                         setPlayerName();
                         break;
                     case 1: // Start New Game
+                        std::cout << "\033[?7h";
                         std::cout << "\033[?1049l";
-                        globalMenuController = nullptr;
                         return true;
                     case 2: // Load Saved Game
                         if (_hasSavedGame) {
+                            std::cout << "\033[?7h";
                             std::cout << "\033[?1049l";
-                            globalMenuController = nullptr;
                             return true;
                         } else {
+                            std::cout << "\033[2J\033[1;1H";
+                            std::cout << "\033[?1049l";
                             std::cout << "\033[1;33m" << "No saved game available!" << "\033[0m" << std::endl;
                             sleep(1);
+                            std::cout << "\033[?1049h";
+                            std::cout << "\033[2J\033[1;1H";
                         }
                         break;
                     case 3:
@@ -884,16 +910,13 @@ bool MenuController::runMainMenu() {
                         showLeaderboard();
                         break;
                     case 5:
+                        std::cout << "\033[?7h";
                         std::cout << "\033[?1049l";
                         system("clear");
                         std::cout << "\033[1;36m" << "Goodbye!" << "\033[0m" << std::endl;
                         exit(0);
                 }
                 
-                // Восстанавливаем глобальный указатель после подменю
-                globalMenuController = this;
-                
-                // Обновляем состояние сохраненной игры
                 file.open(SAVE_FILE, std::ios::binary);
                 _hasSavedGame = file.good();
                 file.close();
@@ -907,6 +930,7 @@ bool MenuController::runMainMenu() {
                 displayMenuItems(menuItems, selectedIndex);
             }
             else if (input == 'q' || input == 27) {
+                std::cout << "\033[?7h";
                 std::cout << "\033[?1049l";
                 system("clear");
                 std::cout << "\033[1;36m" << "Goodbye!" << "\033[0m" << std::endl;
@@ -916,6 +940,7 @@ bool MenuController::runMainMenu() {
     }
     
     signal(SIGINT, SIG_DFL);
+    std::cout << "\033[?7h";
     std::cout << "\033[?1049l";
     system("clear");
     globalMenuController = nullptr;
@@ -951,6 +976,7 @@ bool MenuController::loadGame(GameModel* model) {
 
 void MenuController::showWelcomeScreen() {
     std::cout << "\033[?1049h";
+    std::cout << "\033[?7l"; 
     std::cout << "\033[2J\033[1;1H";
     
     struct winsize w;
