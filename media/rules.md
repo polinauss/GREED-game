@@ -37,4 +37,4 @@
 | Bomb Cell | `B` | Red Background | -20% -9 | Deducts points |
 | Teleport Cell | `T` | Green Background | 0 | Random teleportation |
 
-[Get back](README.md)
+[Get back](../README.md)
