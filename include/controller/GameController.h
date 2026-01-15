@@ -16,6 +16,9 @@ private:
     std::unique_ptr<InputHandler> _inputHandler;
     bool _paused;
     bool _shouldReturnToMenu;
+    bool _terminalTooSmall;
+    int _minTerminalWidth;
+    int _minTerminalHeight;
     std::function<void()> _saveCallback;
     std::function<bool()> _menuCallback;
 
@@ -31,6 +34,8 @@ public:
     bool isPaused() const { return _paused; }
 
 private:
+    bool checkTerminalSize();
+    void showTerminalTooSmallMessage();
     void clearScreen();
 };
 
