@@ -15,7 +15,17 @@ MenuController* MenuController::globalMenuController = nullptr;
 
 void MenuController::handleResize(int sig) {
     if (globalMenuController && sig == SIGWINCH) {
-        globalMenuController->refreshMenu();
+        static bool handlingResize = false;
+        if (handlingResize) return;
+        
+        handlingResize = true;
+        
+        if (!globalMenuController->_currentMenuItems.empty()) {
+            usleep(100000);
+            globalMenuController->refreshMenu();
+        }
+        
+        handlingResize = false;
     }
 }
 
@@ -149,15 +159,25 @@ void MenuController::displaySizeError() const {
 }
 
 void MenuController::refreshMenu() {
+    struct sigaction sa_old, sa_new;
+    sa_new.sa_handler = SIG_IGN;
+    sigemptyset(&sa_new.sa_mask);
+    sa_new.sa_flags = 0;
+    sigaction(SIGWINCH, &sa_new, &sa_old);
+    
     if (!checkTerminalSize()) {
         displaySizeError();
+        sigaction(SIGWINCH, &sa_old, nullptr);
         return;
     }
     
     if (!_currentMenuItems.empty()) {
         displayMenuItems(_currentMenuItems, _currentSelectedIndex);
     }
+    
+    sigaction(SIGWINCH, &sa_old, nullptr);
 }
+
 
 void MenuController::drawAsciiTitle() {
     std::cout << "\033[2J\033[1;1H";
@@ -193,13 +213,25 @@ void MenuController::drawAsciiTitle() {
 }
 
 void MenuController::displayMenuItems(const std::vector<std::string>& items, int selectedIndex) {
+
+    static bool isDrawing = false;
+    if (isDrawing) return;
+    
+    isDrawing = true;
+
     _currentMenuItems = items;
     _currentSelectedIndex = selectedIndex;
     
     if (!checkTerminalSize()) {
         displaySizeError();
+        isDrawing = false;
         return;
     }
+
+    sigset_t mask, oldmask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGWINCH);
+    sigprocmask(SIG_BLOCK, &mask, &oldmask);
 
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -409,6 +441,9 @@ void MenuController::displayMenuItems(const std::vector<std::string>& items, int
     std::cout << "\033[K";
     
     std::cout.flush();
+    
+    sigprocmask(SIG_SETMASK, &oldmask, nullptr);
+    isDrawing = false;
 }
 
 void MenuController::setPlayerName() {
@@ -965,6 +1000,13 @@ bool MenuController::runMainMenu() {
     std::cout << "\033[?7l";
 
     globalMenuController = this;
+    
+    struct sigaction sa_old;
+    struct sigaction sa_new;
+    sa_new.sa_handler = handleResize;
+    sigemptyset(&sa_new.sa_mask);
+    sa_new.sa_flags = 0;
+    sigaction(SIGWINCH, &sa_new, &sa_old);
 
     signal(SIGINT, [](int sig) {
         std::cout << "\033[?7h";
@@ -1079,9 +1121,9 @@ bool MenuController::runMainMenu() {
                 file.close();
                 
                 if (!_hasSavedGame) {
-                    menuItems[2] = "Load Saved Game (No save)";
+                    menuItems[1] = "Load Saved Game (No save)";
                 } else {
-                    menuItems[2] = "Load Saved Game";
+                    menuItems[1] = "Load Saved Game";
                 }
                 
                 displayMenuItems(menuItems, selectedIndex);
@@ -1095,6 +1137,7 @@ bool MenuController::runMainMenu() {
             }
         }
     }
+    sigaction(SIGWINCH, &sa_old, nullptr);
     
     signal(SIGINT, SIG_DFL);
     std::cout << "\033[?7h";
