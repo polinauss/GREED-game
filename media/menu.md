@@ -5,6 +5,8 @@
 # 1. Set player name
 This option allows the player to enter a game name to save the result
 
+<img src='https://github.com/polinauss/GREED-game/blob/main/media/PLAYERSELECT.png?raw=true'/>
+
 # 2. Start new game
 This option allows the player to start a new game
 
