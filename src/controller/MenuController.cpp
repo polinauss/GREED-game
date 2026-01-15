@@ -412,6 +412,12 @@ void MenuController::displayMenuItems(const std::vector<std::string>& items, int
 }
 
 void MenuController::setPlayerName() {
+    struct sigaction sa;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = SIG_IGN;
+    sa.sa_flags = 0;
+    sigaction(SIGWINCH, &sa, nullptr);
+    
     struct termios oldt;
     tcgetattr(STDIN_FILENO, &oldt);
     
@@ -423,140 +429,253 @@ void MenuController::setPlayerName() {
     newt.c_lflag |= (ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
     
-    struct winsize w;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    int terminalWidth = w.ws_col;
-    int terminalHeight = w.ws_row;
-    
-    std::cout << "\033[2J\033[3J\033[1;1H";
-    std::cout.flush();
-    
-    int verticalCenter = terminalHeight / 2;
-    
-    std::string title = "=== SET PLAYER NAME ===";
-    int titleX = (terminalWidth - title.length()) / 2;
-    std::cout << "\033[" << (verticalCenter - 2) << ";" << titleX << "H";
-    std::cout << "\033[1;36m" << title << "\033[0m";
-    
-    std::string currentName = "Current: \033[1;33m" + _playerName + "\033[0m";
-    int currentNameX = (terminalWidth - currentName.length()) / 2;
-    std::cout << "\033[" << (verticalCenter - 1) << ";" << currentNameX << "H";
-    std::cout << currentName;
-    
-    std::string prompt = "New name: ";
-    int promptX = (terminalWidth - prompt.length()) / 2;
-    std::cout << "\033[" << verticalCenter << ";" << promptX << "H";
-    std::cout << "\033[1;37m" << prompt << "\033[0m";
-    
-    std::cout << "\033[?25h";
-    std::cout.flush();
-    
-    int inputX = promptX + prompt.length();
-    std::cout << "\033[" << verticalCenter << ";" << inputX << "H";
-    
-    std::string newName;
-    std::getline(std::cin, newName);
-    
-    if (!newName.empty()) {
-        _playerName = newName;
-        std::string successMsg = "\033[1;32m✓ Name changed!\033[0m";
-        int successX = (terminalWidth - successMsg.length()) / 2;
-        std::cout << "\033[" << (verticalCenter + 1) << ";" << successX << "H";
-        std::cout << successMsg;
-    } else {
-        std::string unchangedMsg = "\033[33m✗ Name unchanged\033[0m";
-        int unchangedX = (terminalWidth - unchangedMsg.length()) / 2;
-        std::cout << "\033[" << (verticalCenter + 1) << ";" << unchangedX << "H";
-        std::cout << unchangedMsg;
+    while (true) {
+        struct winsize w;
+        ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+        int terminalWidth = w.ws_col;
+        int terminalHeight = w.ws_row;
+        
+        if (terminalWidth < 80 || terminalHeight < 24) {
+            std::cout << "\033[2J\033[3J\033[1;1H";
+            std::string errorMsg = "Terminal size too small! Minimum: 80x24, Current: " + 
+                                  std::to_string(terminalWidth) + "x" + std::to_string(terminalHeight);
+            
+            int errorX = (terminalWidth - errorMsg.length()) / 2;
+            int errorY = terminalHeight / 2;
+            
+            if (errorX < 0) errorX = 0;
+            if (errorY < 0) errorY = 0;
+            
+            std::cout << "\033[" << errorY << ";" << errorX << "H";
+            std::cout << "\033[1;31m" << errorMsg << "\033[0m";
+            std::cout << "\033[" << (terminalHeight - 1) << ";1H";
+            std::cout << "\033[33mResize terminal or press Enter to return...\033[0m";
+            std::cout.flush();
+            
+            fd_set readfds;
+            struct timeval timeout;
+            
+            while (true) {
+                FD_ZERO(&readfds);
+                FD_SET(STDIN_FILENO, &readfds);
+                timeout.tv_sec = 0;
+                timeout.tv_usec = 100000;
+                
+                int ready = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &timeout);
+                
+                if (ready > 0) {
+                    char buf[10];
+                    ssize_t n = read(STDIN_FILENO, buf, sizeof(buf));
+                    if (n > 0 && (buf[0] == '\n' || buf[0] == '\r')) {
+                        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+                        sa.sa_handler = handleResize;
+                        sigaction(SIGWINCH, &sa, nullptr);
+                        return;
+                    }
+                }
+                
+                struct winsize w2;
+                ioctl(STDOUT_FILENO, TIOCGWINSZ, &w2);
+                if (w2.ws_col != w.ws_col || w2.ws_row != w.ws_row) {
+                    break;
+                }
+            }
+            continue;
+        }
+        
+        std::cout << "\033[2J\033[3J\033[1;1H";
+        std::cout.flush();
+        
+        int verticalCenter = terminalHeight / 2;
+        
+        std::string title = "=== SET PLAYER NAME ===";
+        int titleX = (terminalWidth - title.length()) / 2;
+        std::cout << "\033[" << (verticalCenter - 2) << ";" << titleX << "H";
+        std::cout << "\033[1;36m" << title << "\033[0m";
+        
+        std::string currentName = "Current: \033[1;33m" + _playerName + "\033[0m";
+        int currentNameX = (terminalWidth - currentName.length()) / 2;
+        std::cout << "\033[" << (verticalCenter - 1) << ";" << currentNameX << "H";
+        std::cout << currentName;
+        
+        std::string prompt = "New name: ";
+        int promptX = (terminalWidth - prompt.length()) / 2;
+        std::cout << "\033[" << verticalCenter << ";" << promptX << "H";
+        std::cout << "\033[1;37m" << prompt << "\033[0m";
+        
+        std::cout << "\033[?25h";
+        std::cout.flush();
+        
+        int inputX = promptX + prompt.length();
+        std::cout << "\033[" << verticalCenter << ";" << inputX << "H";
+        
+        std::string newName;
+        std::getline(std::cin, newName);
+        
+        if (!newName.empty()) {
+            _playerName = newName;
+            std::string successMsg = "\033[1;32m✓ Name changed!\033[0m";
+            int successX = (terminalWidth - successMsg.length()) / 2;
+            std::cout << "\033[" << (verticalCenter + 1) << ";" << successX << "H";
+            std::cout << successMsg;
+        } else {
+            std::string unchangedMsg = "\033[33m✗ Name unchanged\033[0m";
+            int unchangedX = (terminalWidth - unchangedMsg.length()) / 2;
+            std::cout << "\033[" << (verticalCenter + 1) << ";" << unchangedX << "H";
+            std::cout << unchangedMsg;
+        }
+        
+        std::cout.flush();
+        sleep(1);
+        break;
     }
-    
-    std::cout.flush();
-    sleep(1);
-    
-    std::cout << "\033[2J\033[3J\033[1;1H";
-    std::cout.flush();
     
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    
+    sa.sa_handler = handleResize;
+    sigaction(SIGWINCH, &sa, nullptr);
+    
+    std::cout << "\033[2J\033[3J\033[1;1H";
+    std::cout.flush();
 }
 
+
 void MenuController::showRules() {
+    struct sigaction sa;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = SIG_IGN;
+    sa.sa_flags = 0;
+    sigaction(SIGWINCH, &sa, nullptr);
+    
     struct termios oldt;
     tcgetattr(STDIN_FILENO, &oldt);
-    
-    std::cout << "\033[?1049l";
-    std::cout << "\033[2J\033[3J\033[1;1H";
-    std::cout.flush();
-    
-    struct winsize w;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    int terminalWidth = w.ws_col;
-    int terminalHeight = w.ws_row;
-    
-    std::cout << "\033[2J\033[3J\033[1;1H";
-    std::cout.flush();
-    
-    int verticalPadding = terminalHeight / 6;
-    
-    std::string title = "=== GAME RULES ===";
-    int titlePadding = (terminalWidth - title.length()) / 2;
-    std::cout << "\033[" << verticalPadding << ";" << titlePadding << "H";
-    std::cout << "\033[1;36m" << title << "\033[0m" << std::endl << std::endl;
-    
-    std::vector<std::string> rules = {
-        "Jump on colored cells to score points!",
-        "",
-        "\033[1;33mObjective:\033[0m",
-        "Score 200+ points to WIN the game!",
-        "After winning, you can continue playing to set new records.",
-        "",
-        "\033[1;33mHow to Play:\033[0m",
-        "1. Move using W/A/S/D or arrow keys",
-        "2. When stepping on a cell:",
-        "   - Jump forward by the cell's value",
-        "   - Earn points equal to the cell's value",
-        "3. Game over if you land outside grid or on unavailable cell!",
-        "",
-        "\033[1;33mCell Types:\033[0m",
-        "\033[31mRed (1): 1 point\033[0m",
-        "\033[32mGreen (2): 2 points\033[0m", 
-        "\033[34mBlue (3): 3 points\033[0m",
-        "\033[33mYellow (4): 4 points\033[0m",
-        "\033[35mPurple (5): 5 points\033[0m",
-        "",
-        "\033[1;33mSpecial Cells:\033[0m",
-        "\033[31;1m Bomb (B):\033[0m deducts 20% of score",
-        "\033[32;1m Teleport (T):\033[0m teleports to random location",
-        "",
-        "\033[1;33mSkill Levels:\033[0m",
-        "\033[31mBEGINNER: 0-99 points\033[0m",
-        "\033[33mADVANCED: 100-199 points\033[0m", 
-        "\033[32mWINNER: 200+ points (VICTORY!)\033[0m"
-    };
-    
-    int currentY = verticalPadding + 2;
-    for (const auto& rule : rules) {
-        int padding = (terminalWidth - rule.length()) / 2;
-        if (padding < 0) padding = 0;
-        std::cout << "\033[" << currentY << ";" << padding << "H";
-        std::cout << rule;
-        currentY++;
-    }
-    
-    std::string hint = "\033[1;37mPress any key to return to menu...\033[0m";
-    int hintPadding = (terminalWidth - hint.length()) / 2;
-    std::cout << "\033[" << (terminalHeight - 2) << ";" << hintPadding << "H";
-    std::cout << hint;
-    
-    std::cout.flush();
     
     struct termios newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
     
-    char input;
-    read(STDIN_FILENO, &input, 1);
+    std::cout << "\033[?1049l";
+    std::cout.flush();
+    
+    bool shouldReturn = false;
+    
+    while (!shouldReturn) {
+        struct winsize w;
+        ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+        int terminalWidth = w.ws_col;
+        int terminalHeight = w.ws_row;
+        
+        if (terminalWidth < 80 || terminalHeight < 24) {
+            std::cout << "\033[2J\033[3J\033[1;1H";
+            std::string errorMsg = "Terminal size too small! Minimum: 80x24, Current: " + 
+                                  std::to_string(terminalWidth) + "x" + std::to_string(terminalHeight);
+            
+            int errorX = (terminalWidth - errorMsg.length()) / 2;
+            int errorY = terminalHeight / 2;
+            
+            if (errorX < 0) errorX = 0;
+            if (errorY < 0) errorY = 0;
+            
+            std::cout << "\033[" << errorY << ";" << errorX << "H";
+            std::cout << "\033[1;31m" << errorMsg << "\033[0m";
+            std::cout << "\033[" << (terminalHeight - 1) << ";1H";
+            std::cout << "\033[33mResize terminal or press any key to return...\033[0m";
+            std::cout.flush();
+            
+            char input;
+            read(STDIN_FILENO, &input, 1);
+            shouldReturn = true;
+            break;
+        }
+        
+        std::cout << "\033[2J\033[3J\033[1;1H";
+        std::cout.flush();
+        
+        int verticalPadding = terminalHeight / 6;
+        
+        std::string title = "=== GAME RULES ===";
+        int titlePadding = (terminalWidth - title.length()) / 2;
+        std::cout << "\033[" << verticalPadding << ";" << titlePadding << "H";
+        std::cout << "\033[1;36m" << title << "\033[0m";
+        
+        std::vector<std::string> rules = {
+            "Jump on colored cells to score points!",
+            "",
+            "\033[1;33mObjective:\033[0m",
+            "Score 200+ points to WIN the game!",
+            "After winning, you can continue playing to set new records.",
+            "",
+            "\033[1;33mHow to Play:\033[0m",
+            "1. Move using W/A/S/D or arrow keys",
+            "2. When stepping on a cell:",
+            "   - Jump forward by the cell's value",
+            "   - Earn points equal to the cell's value",
+            "3. Game over if you land outside grid or on unavailable cell!",
+            "",
+            "\033[1;33mCell Types:\033[0m",
+            "\033[31mRed (1): 1 point\033[0m",
+            "\033[32mGreen (2): 2 points\033[0m", 
+            "\033[34mBlue (3): 3 points\033[0m",
+            "\033[33mYellow (4): 4 points\033[0m",
+            "\033[35mPurple (5): 5 points\033[0m",
+            "",
+            "\033[1;33mSpecial Cells:\033[0m",
+            "\033[31;1m Bomb (B):\033[0m deducts 20% of score",
+            "\033[32;1m Teleport (T):\033[0m teleports to random location",
+            "",
+            "\033[1;33mSkill Levels:\033[0m",
+            "\033[31mBEGINNER: 0-99 points\033[0m",
+            "\033[33mADVANCED: 100-199 points\033[0m", 
+            "\033[32mWINNER: 200+ points (VICTORY!)\033[0m"
+        };
+        
+        int currentY = verticalPadding + 2;
+        for (size_t i = 0; i < rules.size() && currentY < terminalHeight - 2; i++) {
+            int padding = (terminalWidth - rules[i].length()) / 2;
+            if (padding < 0) padding = 0;
+            std::cout << "\033[" << currentY << ";" << padding << "H";
+            std::cout << rules[i];
+            currentY++;
+        }
+        
+        std::string hint = "\033[1;37mPress any key to return to menu...\033[0m";
+        int hintPadding = (terminalWidth - hint.length()) / 2;
+        std::cout << "\033[" << (terminalHeight - 1) << ";" << hintPadding << "H";
+        std::cout << hint;
+        
+        std::cout.flush();
+        
+        fd_set readfds;
+        struct timeval timeout;
+        
+        bool keyPressed = false;
+        while (!keyPressed) {
+            FD_ZERO(&readfds);
+            FD_SET(STDIN_FILENO, &readfds);
+            timeout.tv_sec = 0;
+            timeout.tv_usec = 100000;
+            
+            int ready = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &timeout);
+            
+            if (ready > 0) {
+                char input;
+                read(STDIN_FILENO, &input, 1);
+                shouldReturn = true;
+                keyPressed = true;
+            }
+            
+            struct winsize w2;
+            ioctl(STDOUT_FILENO, TIOCGWINSZ, &w2);
+            if (w2.ws_col != w.ws_col || w2.ws_row != w.ws_row) {
+                break;
+            }
+        }
+    }
     
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    
+    sa.sa_handler = handleResize;
+    sigaction(SIGWINCH, &sa, nullptr);
     
     std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
@@ -617,80 +736,138 @@ void MenuController::addToLeaderboard(int score) {
     saveLeaderboard();
 }
 void MenuController::showLeaderboard() {
+    struct sigaction sa;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = SIG_IGN;
+    sa.sa_flags = 0;
+    sigaction(SIGWINCH, &sa, nullptr);
+    
     struct termios oldt;
     tcgetattr(STDIN_FILENO, &oldt);
-    //
-    std::cout << "\033[?1049l";
-    std::cout << "\033[2J\033[3J\033[1;1H";
-    std::cout.flush();
-    
-    struct winsize w;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    int terminalWidth = w.ws_col;
-    int terminalHeight = w.ws_row;
-    
-    std::cout << "\033[2J\033[3J\033[1;1H";
-    std::cout.flush();
-    
-    int verticalPadding = terminalHeight / 6;
-    
-    std::cout << "\033[" << verticalPadding << ";1H";
-    std::cout << "\033[1;36m";
-    int titlePadding = (terminalWidth - 18) / 2;
-    std::cout << std::string(titlePadding, ' ') << "=== LEADERBOARD ===" << "\033[0m" << std::endl << std::endl;
-    
-    if (_leaderboard.empty()) {
-        int msgPadding = (terminalWidth - 31) / 2;
-        std::cout << std::string(msgPadding, ' ') << "\033[33m" << "No records yet. Be the first!" << "\033[0m" << std::endl;
-    } else {
-        int tableWidth = 46;
-        int tablePadding = (terminalWidth - tableWidth) / 2;
-        
-        std::cout << std::string(tablePadding, ' ') 
-                  << std::left << std::setw(4) << "#" 
-                  << std::setw(20) << "Player" 
-                  << std::setw(10) << "Score" 
-                  << "Date" << std::endl;
-        std::cout << std::string(tablePadding, ' ') << std::string(46, '-') << std::endl;
-        
-        for (size_t i = 0; i < _leaderboard.size(); i++) {
-            const auto& entry = _leaderboard[i];
-            
-            std::string colorCode;
-            if (i == 0) colorCode = "\033[1;32m";
-            else if (i == 1) colorCode = "\033[1;32m";
-            else if (i == 2) colorCode = "\033[1;32m";
-            else if (i >= 3 && i <= 5) colorCode = "\033[1;34m";
-            else if (i >= 6 && i <= 8) colorCode = "\033[1;33m";
-            else if (i == 9) colorCode = "\033[1;37m";
-            else colorCode = "\033[0m";
-            
-            std::cout << std::string(tablePadding, ' ') 
-                      << colorCode
-                      << std::left << std::setw(4) << (i + 1)
-                      << std::setw(20) << entry.playerName
-                      << std::setw(10) << entry.score
-                      << entry.date
-                      << "\033[0m" << std::endl;
-        }
-    }
-    
-    std::cout << std::endl << std::endl;
-    
-    int hintPadding = (terminalWidth - 37) / 2;
-    std::cout << "\033[" << (terminalHeight - 2) << ";" << hintPadding << "H";
-    std::cout << "\033[1;37m" << "Press any key to return to menu..." << "\033[0m";
-    
-    std::cout.flush();
     
     struct termios newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
     
-    char input;
-    read(STDIN_FILENO, &input, 1);
+    std::cout << "\033[?1049l";
+    std::cout.flush();
+    
+    bool shouldReturn = false;
+    
+    while (!shouldReturn) {
+        struct winsize w;
+        ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+        int terminalWidth = w.ws_col;
+        int terminalHeight = w.ws_row;
+        
+        if (terminalWidth < 80 || terminalHeight < 24) {
+            std::cout << "\033[2J\033[3J\033[1;1H";
+            std::string errorMsg = "Terminal size too small! Minimum: 80x24, Current: " + 
+                                  std::to_string(terminalWidth) + "x" + std::to_string(terminalHeight);
+            
+            int errorX = (terminalWidth - errorMsg.length()) / 2;
+            int errorY = terminalHeight / 2;
+            
+            if (errorX < 0) errorX = 0;
+            if (errorY < 0) errorY = 0;
+            
+            std::cout << "\033[" << errorY << ";" << errorX << "H";
+            std::cout << "\033[1;31m" << errorMsg << "\033[0m";
+            std::cout << "\033[" << (terminalHeight - 1) << ";1H";
+            std::cout << "\033[33mResize terminal or press any key to return...\033[0m";
+            std::cout.flush();
+            
+            char input;
+            read(STDIN_FILENO, &input, 1);
+            shouldReturn = true;
+            break;
+        }
+        
+        std::cout << "\033[2J\033[3J\033[1;1H";
+        std::cout.flush();
+        
+        int verticalPadding = terminalHeight / 6;
+        
+        std::cout << "\033[" << verticalPadding << ";1H";
+        std::cout << "\033[1;36m";
+        int titlePadding = (terminalWidth - 18) / 2;
+        std::cout << std::string(titlePadding, ' ') << "=== LEADERBOARD ===" << "\033[0m" << std::endl << std::endl;
+        
+        if (_leaderboard.empty()) {
+            int msgPadding = (terminalWidth - 31) / 2;
+            std::cout << std::string(msgPadding, ' ') << "\033[33m" << "No records yet. Be the first!" << "\033[0m" << std::endl;
+        } else {
+            int tableWidth = 46;
+            int tablePadding = (terminalWidth - tableWidth) / 2;
+            
+            std::cout << std::string(tablePadding, ' ') 
+                      << std::left << std::setw(4) << "#" 
+                      << std::setw(20) << "Player" 
+                      << std::setw(10) << "Score" 
+                      << "Date" << std::endl;
+            std::cout << std::string(tablePadding, ' ') << std::string(46, '-') << std::endl;
+            
+            int maxEntries = std::min((size_t)10, _leaderboard.size());
+            for (int i = 0; i < maxEntries; i++) {
+                const auto& entry = _leaderboard[i];
+                
+                std::string colorCode;
+                if (i == 0) colorCode = "\033[1;32m";
+                else if (i == 1) colorCode = "\033[1;32m";
+                else if (i == 2) colorCode = "\033[1;32m";
+                else if (i >= 3 && i <= 5) colorCode = "\033[1;34m";
+                else if (i >= 6 && i <= 8) colorCode = "\033[1;33m";
+                else if (i == 9) colorCode = "\033[1;37m";
+                else colorCode = "\033[0m";
+                
+                std::cout << std::string(tablePadding, ' ') 
+                          << colorCode
+                          << std::left << std::setw(4) << (i + 1)
+                          << std::setw(20) << entry.playerName
+                          << std::setw(10) << entry.score
+                          << entry.date
+                          << "\033[0m" << std::endl;
+            }
+        }
+        
+        std::string hint = "\033[1;37mPress any key to return to menu...\033[0m";
+        int hintPadding = (terminalWidth - hint.length()) / 2;
+        std::cout << "\033[" << (terminalHeight - 1) << ";" << hintPadding << "H";
+        std::cout << hint;
+        
+        std::cout.flush();
+        
+        fd_set readfds;
+        struct timeval timeout;
+        
+        bool keyPressed = false;
+        while (!keyPressed) {
+            FD_ZERO(&readfds);
+            FD_SET(STDIN_FILENO, &readfds);
+            timeout.tv_sec = 0;
+            timeout.tv_usec = 100000;
+            
+            int ready = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &timeout);
+            
+            if (ready > 0) {
+                char input;
+                read(STDIN_FILENO, &input, 1);
+                shouldReturn = true;
+                keyPressed = true;
+            }
+            
+            struct winsize w2;
+            ioctl(STDOUT_FILENO, TIOCGWINSZ, &w2);
+            if (w2.ws_col != w.ws_col || w2.ws_row != w.ws_row) {
+                break;
+            }
+        }
+    }
     
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    
+    sa.sa_handler = handleResize;
+    sigaction(SIGWINCH, &sa, nullptr);
     
     std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
