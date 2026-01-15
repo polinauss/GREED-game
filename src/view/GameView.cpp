@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <chrono>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
 static GameView* globalGameView = nullptr;
 
