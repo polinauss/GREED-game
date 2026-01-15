@@ -23,3 +23,5 @@ Using this option, the player can match their attempts or compare the result wit
 
 # 6. Exit 
 Аllows you to return to terminal input state
+
+[Get back](README.md)

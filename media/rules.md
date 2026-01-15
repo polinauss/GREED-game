@@ -36,3 +36,5 @@
 | Basic Cell 5 | `5` | 🟣 Purple | 5 points | Jump 5 cells forward |
 | Bomb Cell | `B` | Red Background | -20% -9 | Deducts points |
 | Teleport Cell | `T` | Green Background | 0 | Random teleportation |
+
+[Get back](README.md)

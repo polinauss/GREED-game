@@ -14,3 +14,5 @@ make run
 ```
 
 <img src='https://github.com/polinauss/GREED-game/blob/main/media/MENU.gif'/>
+
+[Get back](README.md)
