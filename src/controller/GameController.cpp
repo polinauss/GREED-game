@@ -59,7 +59,7 @@ void GameController::startGame() {
                 else if (tolower(input) == 'm') {
                     _shouldReturnToMenu = true;
                 }
-                else if (tolower(input) == 's') {
+                else if (tolower(input) == 'f') {
                     if (_saveCallback) _saveCallback();
                 }
                 else if (input == 27) {
@@ -129,7 +129,7 @@ void GameController::startGame() {
                         waitingForSpace = false;
                         currentDirection = Direction::NONE;
                     }
-                    else if (tolower(input) == 's') {
+                    else if (tolower(input) == 'f') {
                         if (_saveCallback) _saveCallback();
                 
                     }
@@ -168,7 +168,7 @@ void GameController::startGame() {
                     else if (tolower(input) == 'p') {
                         _paused = true;
                     }
-                    else if (tolower(input) == 's') {
+                    else if (tolower(input) == 'f') {
                         if (_saveCallback) _saveCallback();
                     }
                     else if (tolower(input) == 'm') {
@@ -249,7 +249,7 @@ void GameController::startGame() {
             
             std::vector<std::pair<std::string, std::string>> buttons = {
                 {"P", "Resume Game"},
-                {"S", "Save Game"}, 
+                {"F", "Save Game"}, 
                 {"M", "Main Menu"},
                 {"ESC", "Exit"}
             };

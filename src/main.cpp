@@ -45,7 +45,7 @@ int main() {
                 
                                 int selectedOption = menu.getLastSelectedOption();
                 
-                if (selectedOption == 2 && menu.hasSavedGame()) {
+                if (selectedOption == 1 && menu.hasSavedGame()) {
                     bool loadSuccessful = menu.loadGame(model);
                     if (!loadSuccessful) {
                         std::cout << "\033[1;31mFailed to load saved game.\033[0m" << std::endl;

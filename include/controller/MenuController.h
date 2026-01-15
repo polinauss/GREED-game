@@ -46,11 +46,9 @@ private:
     bool _hasSavedGame;
     int _lastSelectedOption;
     
-    // Добавлено: состояние для перерисовки
     int _currentSelectedIndex;
     std::vector<std::string> _currentMenuItems;
     
-    // Добавлено: статический указатель для обработчика сигналов
     static MenuController* globalMenuController;
 
 public:
@@ -71,7 +69,6 @@ public:
     const std::string& getPlayerName() const { return _playerName; }
     bool hasSavedGame() const { return _hasSavedGame; }
     
-    // Добавлено: метод для перерисовки меню
     void refreshMenu();
 
 private:
@@ -80,10 +77,8 @@ private:
     void loadLeaderboard();
     void saveLeaderboard();
     
-    // Добавлено: статический обработчик сигнала
     static void handleResize(int sig);
-    
-    // Добавлено: проверка минимального размера
+  
     bool checkTerminalSize() const;
     void displaySizeError() const;
 };

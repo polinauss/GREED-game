@@ -975,10 +975,10 @@ bool MenuController::runMainMenu() {
     });
 
     std::vector<std::string> menuItems = {
-        "Set Player Name",
         "Start New Game",
         "Load Saved Game",
         "Game Rules",
+        "Set Player Name",
         "Leaderboard",
         "Exit"
     };
@@ -988,9 +988,9 @@ bool MenuController::runMainMenu() {
     file.close();
     
     if (!_hasSavedGame) {
-        menuItems[2] = "Load Saved Game (No save)";
+        menuItems[1] = "Load Saved Game (No save)";
     } else {
-        menuItems[2] = "Load Saved Game";
+        menuItems[1] = "Load Saved Game";
     }
     
     int selectedIndex = 0;
@@ -1038,14 +1038,12 @@ bool MenuController::runMainMenu() {
                 _lastSelectedOption = selectedIndex;
                 
                 switch(selectedIndex) {
-                    case 0:
-                        setPlayerName();
-                        break;
-                    case 1: // Start New Game
+                    case 0: // Start New Game
                         std::cout << "\033[?7h";
                         std::cout << "\033[?1049l";
                         return true;
-                    case 2: // Load Saved Game
+                        break;
+                    case 1:// Load Saved Game
                         if (_hasSavedGame) {
                             std::cout << "\033[?7h";
                             std::cout << "\033[?1049l";
@@ -1059,8 +1057,11 @@ bool MenuController::runMainMenu() {
                             std::cout << "\033[2J\033[1;1H";
                         }
                         break;
-                    case 3:
+                    case 2: 
                         showRules();
+                        break;
+                    case 3:
+                        setPlayerName();
                         break;
                     case 4:
                         showLeaderboard();

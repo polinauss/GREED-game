@@ -206,7 +206,7 @@ void ConsoleRenderer::drawStartingState(const Grid& grid) {
     }
     
     int controlsY = _offset.getY() + gridHeight + 2;
-    std::string controls = "\033[32mW/↑ A/← S/↓ D/→\033[0m Move  \033[33mP\033[0m Pause  \033[34mS\033[0m Save  \033[35mM\033[0m Menu  \033[36mESC\033[0m Exit";
+    std::string controls = "\033[32mW/↑ A/← S/↓ D/→\033[0m Move  \033[33mP\033[0m Pause  \033[34mF\033[0m Save  \033[35mM\033[0m Menu  \033[36mESC\033[0m Exit";
     int controlsX = (terminalWidth - controls.length()) / 2;
     if (controlsX < 0) controlsX = 0;
     
