@@ -40,30 +40,25 @@ int main() {
                 std::cout.flush();
                 
                 GameModel* model = new GameModel();
-                bool loadSuccessful = false;
+                std::cout << "\033[?1049l\033[2J\033[1;1H";
+                std::cout.flush();
                 
-                if (menu.hasSavedGame()) {
-                    std::cout << "\033[2J\033[1;1H";
-                    std::cout << "Load saved game? (y/n): ";
-                    char choice;
-                    std::cin >> choice;
-                    std::cin.ignore();
-                    
-                    if (choice == 'y' || choice == 'Y') {
-                        loadSuccessful = menu.loadGame(model);
-                        if (!loadSuccessful) {
-                            std::cout << "Failed to load saved game. Starting new game." << std::endl;
-                            sleep(1);
-                        }
+                                int selectedOption = menu.getLastSelectedOption();
+                
+                if (selectedOption == 2 && menu.hasSavedGame()) {
+                    bool loadSuccessful = menu.loadGame(model);
+                    if (!loadSuccessful) {
+                        std::cout << "\033[1;31mFailed to load saved game.\033[0m" << std::endl;
+                        std::cout << "\033[1;33mStarting new game instead...\033[0m" << std::endl;
+                        sleep(2);
+                        model->initializeGame();
                     }
-                    
-                    std::cout << "\033[2J\033[1;1H";
-                    std::cout.flush();
-                }
-                
-                if (!loadSuccessful) {
+                } else {
                     model->initializeGame();
                 }
+                
+                std::cout << "\033[?1049h\033[2J\033[1;1H";
+                std::cout.flush();
                 
                 GameView* view = new GameView(model);
                 GameController* controller = new GameController(model, view);
@@ -76,17 +71,14 @@ int main() {
                     return true;
                 });
                 
-                std::cout << "\033[?1049h\033[2J\033[1;1H";
-                std::cout.flush();
-                
                 controller->startGame();
-                
-                std::cout << "\033[?1049l\033[2J\033[1;1H";
-                std::cout.flush();
                 
                 if (model->isGameOver() && !controller->shouldReturnToMenu()) {
                     menu.addToLeaderboard(model->getScore());
                 }
+                
+                std::cout << "\033[?1049l\033[2J\033[1;1H";
+                std::cout.flush();
                 
                 delete controller;
                 delete view;
@@ -98,7 +90,7 @@ int main() {
         }
         
     } catch (const std::exception& e) {
-        std::cerr << "Ошибка: " << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
         tcsetattr(STDIN_FILENO, TCSANOW, &originalTermios);
         std::cout << "\033[?7h\033[2J\033[1;1H\033[?25h\033[0m";
         system("clear");
