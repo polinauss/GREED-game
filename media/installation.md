@@ -12,3 +12,5 @@ chmod +x script.sh && ./script.sh
 # Run the game
 make run
 ```
+
+<img src='https://github.com/polinauss/GREED-game/blob/main/media/MENU.gif'/>

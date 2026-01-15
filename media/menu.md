@@ -16,6 +16,7 @@ This option allows the user to view game rules (in more detail [here](rules.md))
 
 # 5. Leaderoard
 Using this option, the player can match their attempts or compare the result with other players
+
 <img src='https://github.com/polinauss/GREED-game/blob/main/media/LEADERBOARD.png?raw=true'/>
 
 # 6. Exit 

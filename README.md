@@ -10,7 +10,7 @@
 
 ## Video Demonstration
 
-<img src='https://github.com/polinauss/GREED-game/blob/main/media/game.gif?raw=true'/>
+<img src='https://github.com/polinauss/GREED-game/blob/main/media/game.gif'/>
 
 ## Instructions for interaction with project
  
