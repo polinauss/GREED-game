@@ -114,11 +114,13 @@ int InteractionHandler::collideWithBombCell(BombCell& cell) {
     if (!cell.isAvailable())
         return FALSE;
 
-    _model._score -= _model._score * 0.2 + 9;
+    _model._score -= static_cast<int>(_model._score * 0.2) + 9;
     cell.setAvailable(false);
 
-    if (_model._score <= 0)
+    if (_model._score <= 0) {
+        _model._score = 0;
         return FALSE;
+    }
 
     return BOMB;
 }

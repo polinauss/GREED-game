@@ -270,7 +270,13 @@ void ConsoleRenderer::drawScoreAtPosition(int score, const Position& pos) const 
         scoreColor = "\033[1;32m";
     }
     
-    std::cout << "\033[1;36mScore: " << scoreColor << score << _colorCodes.at(Color::DEFAULT);
+    std::string scoreStr = std::to_string(score);
+    
+    if (scoreStr.length() < 3) {
+        scoreStr = std::string(3 - scoreStr.length(), ' ') + scoreStr;
+    }
+    
+    std::cout << "\033[1;36mScore: " << scoreColor << scoreStr << _colorCodes.at(Color::DEFAULT);
     std::cout.flush();
 }
 
