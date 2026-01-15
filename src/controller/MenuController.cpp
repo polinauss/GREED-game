@@ -206,12 +206,10 @@ void MenuController::displayMenuItems(const std::vector<std::string>& items, int
     int terminalWidth = w.ws_col;
     int terminalHeight = w.ws_row;
     
-    std::cout << "\033[2J\033[1;1H";
+    std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
     
-    // Включаем альтернативный буфер для предотвращения прокрутки
     std::cout << "\033[?1049h";
-    // Отключаем прокрутку терминала
     std::cout << "\033[?7l";
     
     std::vector<std::string> titleLines = {
@@ -414,16 +412,13 @@ void MenuController::displayMenuItems(const std::vector<std::string>& items, int
 }
 
 void MenuController::setPlayerName() {
-    // Сохраняем предыдущее состояние терминала
     struct termios oldt;
     tcgetattr(STDIN_FILENO, &oldt);
     
-    // Выходим из альтернативного буфера и очищаем все
-    std::cout << "\033[?1049l";  // Выход из альтернативного буфера
-    std::cout << "\033[2J\033[3J\033[1;1H";  // Очищаем экран и историю прокрутки
+    std::cout << "\033[?1049l";
+    std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
     
-    // Включаем нормальный режим терминала для ввода
     struct termios newt = oldt;
     newt.c_lflag |= (ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
@@ -433,13 +428,11 @@ void MenuController::setPlayerName() {
     int terminalWidth = w.ws_col;
     int terminalHeight = w.ws_row;
     
-    // Очищаем полностью
     std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
     
     int verticalCenter = terminalHeight / 2;
     
-    // Выводим заголовок
     std::string title = "=== SET PLAYER NAME ===";
     int titleX = (terminalWidth - title.length()) / 2;
     std::cout << "\033[" << (verticalCenter - 2) << ";" << titleX << "H";
@@ -455,7 +448,7 @@ void MenuController::setPlayerName() {
     std::cout << "\033[" << verticalCenter << ";" << promptX << "H";
     std::cout << "\033[1;37m" << prompt << "\033[0m";
     
-    std::cout << "\033[?25h";  // Показываем курсор
+    std::cout << "\033[?25h";
     std::cout.flush();
     
     int inputX = promptX + prompt.length();
@@ -480,22 +473,18 @@ void MenuController::setPlayerName() {
     std::cout.flush();
     sleep(1);
     
-    // Полностью очищаем экран перед возвратом
     std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
     
-    // Восстанавливаем терминальный режим
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 }
 
 void MenuController::showRules() {
-    // Сохраняем предыдущее состояние терминала
     struct termios oldt;
     tcgetattr(STDIN_FILENO, &oldt);
     
-    // Выходим из альтернативного буфера и очищаем все
-    std::cout << "\033[?1049l";  // Выход из альтернативного буфера
-    std::cout << "\033[2J\033[3J\033[1;1H";  // Очищаем экран и историю прокрутки
+    std::cout << "\033[?1049l";
+    std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
     
     struct winsize w;
@@ -503,7 +492,6 @@ void MenuController::showRules() {
     int terminalWidth = w.ws_col;
     int terminalHeight = w.ws_row;
     
-    // Полностью очищаем
     std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
     
@@ -561,7 +549,6 @@ void MenuController::showRules() {
     
     std::cout.flush();
     
-    // Устанавливаем неканонический режим для ожидания нажатия
     struct termios newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
@@ -569,10 +556,8 @@ void MenuController::showRules() {
     char input;
     read(STDIN_FILENO, &input, 1);
     
-    // Восстанавливаем оригинальный режим
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
     
-    // Полностью очищаем перед возвратом
     std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
 }
@@ -632,13 +617,11 @@ void MenuController::addToLeaderboard(int score) {
     saveLeaderboard();
 }
 void MenuController::showLeaderboard() {
-    // Сохраняем предыдущее состояние терминала
     struct termios oldt;
     tcgetattr(STDIN_FILENO, &oldt);
-    
-    // Выходим из альтернативного буфера и очищаем все
-    std::cout << "\033[?1049l";  // Выход из альтернативного буфера
-    std::cout << "\033[2J\033[3J\033[1;1H";  // Очищаем экран и историю прокрутки
+    //
+    std::cout << "\033[?1049l";
+    std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
     
     struct winsize w;
@@ -646,7 +629,6 @@ void MenuController::showLeaderboard() {
     int terminalWidth = w.ws_col;
     int terminalHeight = w.ws_row;
     
-    // Полностью очищаем
     std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
     
@@ -701,7 +683,6 @@ void MenuController::showLeaderboard() {
     
     std::cout.flush();
     
-    // Устанавливаем неканонический режим для ожидания нажатия
     struct termios newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
@@ -709,10 +690,8 @@ void MenuController::showLeaderboard() {
     char input;
     read(STDIN_FILENO, &input, 1);
     
-    // Восстанавливаем оригинальный режим
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
     
-    // Полностью очищаем перед возвратом
     std::cout << "\033[2J\033[3J\033[1;1H";
     std::cout.flush();
 }
