@@ -2,7 +2,7 @@ build/
 *.o
 greed_game
 
-docs/html/
+html/
 docs/latex/
 
 .DS_Store

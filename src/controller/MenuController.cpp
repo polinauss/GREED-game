@@ -1,5 +1,4 @@
 #include "controller/MenuController.h"
-#include "controller/MenuController.h"
 #include "controller/InputHandler.h"
 #include <iostream>
 #include <unistd.h>
@@ -11,6 +10,14 @@
 #include <csignal>
 #include <sys/ioctl.h>
 #include <termios.h>
+
+MenuController* MenuController::globalMenuController = nullptr;
+
+void MenuController::handleResize(int sig) {
+    if (globalMenuController && sig == SIGWINCH) {
+        globalMenuController->refreshMenu();
+    }
+}
 
 void GameState::serialize(std::ofstream& file) const {
     file.write(reinterpret_cast<const char*>(&playerPosition), sizeof(Position));
@@ -99,12 +106,57 @@ void GameState::deserialize(std::ifstream& file) {
     }
 }
 
-MenuController::MenuController() : _playerName("Player"), _hasSavedGame(false), _lastSelectedOption(-1) {
+MenuController::MenuController() : _playerName("Player"), _hasSavedGame(false), 
+                                  _lastSelectedOption(-1), _currentSelectedIndex(0) {
     loadLeaderboard();
     
     std::ifstream file(SAVE_FILE, std::ios::binary);
     _hasSavedGame = file.good();
     file.close();
+    
+    struct sigaction sa;
+    sa.sa_handler = handleResize;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGWINCH, &sa, nullptr);
+    
+    globalMenuController = this;
+}
+
+bool MenuController::checkTerminalSize() const {
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    return (w.ws_col >= 80 && w.ws_row >= 24);
+}
+
+void MenuController::displaySizeError() const {
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    
+    std::cout << "\033[2J\033[1;1H";
+    std::string errorMsg = "Terminal size too small! Minimum: 80x24, Current: " + 
+                          std::to_string(w.ws_col) + "x" + std::to_string(w.ws_row);
+    
+    int errorX = (w.ws_col - errorMsg.length()) / 2;
+    int errorY = w.ws_row / 2;
+    
+    if (errorX < 0) errorX = 0;
+    if (errorY < 0) errorY = 0;
+    
+    std::cout << "\033[" << errorY << ";" << errorX << "H";
+    std::cout << "\033[1;31m" << errorMsg << "\033[0m";
+    std::cout.flush();
+}
+
+void MenuController::refreshMenu() {
+    if (!checkTerminalSize()) {
+        displaySizeError();
+        return;
+    }
+    
+    if (!_currentMenuItems.empty()) {
+        displayMenuItems(_currentMenuItems, _currentSelectedIndex);
+    }
 }
 
 void MenuController::drawAsciiTitle() {
@@ -141,6 +193,15 @@ void MenuController::drawAsciiTitle() {
 }
 
 void MenuController::displayMenuItems(const std::vector<std::string>& items, int selectedIndex) {
+    _currentMenuItems = items;
+    _currentSelectedIndex = selectedIndex;
+    
+    if (!checkTerminalSize()) {
+        displaySizeError();
+        return;
+    }
+
+
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int terminalWidth = w.ws_col;
@@ -351,6 +412,8 @@ void MenuController::displayMenuItems(const std::vector<std::string>& items, int
 }
 
 void MenuController::setPlayerName() {
+    globalMenuController = nullptr;
+
     std::cout << "\033[?1049l";
     std::cout << "\033[2J\033[1;1H";
     std::cout.flush();
@@ -405,8 +468,16 @@ void MenuController::setPlayerName() {
     
     std::cout << "\033[?1049h\033[2J\033[1;1H";
     std::cout.flush();
-}
+
+    globalMenuController = this;
+}    
+
+
+
 void MenuController::showRules() {
+    globalMenuController = nullptr;
+
+
     std::cout << "\033[?1049l";
     std::cout << "\033[2J\033[1;1H";
     std::cout.flush();
@@ -484,6 +555,9 @@ void MenuController::showRules() {
     
     std::cout << "\033[?1049h\033[2J\033[1;1H";
     std::cout.flush();
+
+
+    globalMenuController = this;
 }
 
 void MenuController::loadLeaderboard() {
@@ -542,6 +616,8 @@ void MenuController::addToLeaderboard(int score) {
 }
 
 void MenuController::showLeaderboard() {
+    globalMenuController = this;
+
     std::cout << "\033[?1049l";
     std::cout << "\033[2J\033[1;1H";
     std::cout.flush();
@@ -596,6 +672,8 @@ void MenuController::showLeaderboard() {
                       << entry.date
                       << "\033[0m" << std::endl;
         }
+
+        globalMenuController = this;
     }
     
     std::cout << std::endl << std::endl;
@@ -617,6 +695,7 @@ void MenuController::showLeaderboard() {
     std::cout << "\033[?1049h\033[2J\033[1;1H";
     std::cout.flush();
 }
+
 void MenuController::saveGame(GameModel* model) {
     GameState state;
     state.playerPosition = model->getPlayerPosition();
@@ -700,9 +779,11 @@ void MenuController::saveGame(GameModel* model) {
 }
 
 bool MenuController::runMainMenu() {
-
     std::cout << "\033[?1049h\033[2J\033[1;1H";
     std::cout.flush();
+
+    // Устанавливаем глобальный указатель
+    globalMenuController = this;
 
     signal(SIGINT, [](int sig) {
         std::cout << "\033[?1049l";
@@ -732,6 +813,7 @@ bool MenuController::runMainMenu() {
     
     int selectedIndex = 0;
     
+    // Первоначальная отрисовка
     displayMenuItems(menuItems, selectedIndex);
     
     while (true) {
@@ -773,32 +855,33 @@ bool MenuController::runMainMenu() {
             } 
             else if (input == '\n' || input == '\r' || input == ' ') { 
                 _lastSelectedOption = selectedIndex;
+                
+                // Временно сбрасываем глобальный указатель перед подменю
+                globalMenuController = nullptr;
+                
                 switch(selectedIndex) {
                     case 0:
                         setPlayerName();
-                        displayMenuItems(menuItems, selectedIndex);
                         break;
                     case 1: // Start New Game
                         std::cout << "\033[?1049l";
+                        globalMenuController = nullptr;
                         return true;
                     case 2: // Load Saved Game
                         if (_hasSavedGame) {
                             std::cout << "\033[?1049l";
-                            
+                            globalMenuController = nullptr;
                             return true;
                         } else {
                             std::cout << "\033[1;33m" << "No saved game available!" << "\033[0m" << std::endl;
                             sleep(1);
-                            displayMenuItems(menuItems, selectedIndex);
                         }
                         break;
                     case 3:
                         showRules();
-                        displayMenuItems(menuItems, selectedIndex);
                         break;
                     case 4:
                         showLeaderboard();
-                        displayMenuItems(menuItems, selectedIndex);
                         break;
                     case 5:
                         std::cout << "\033[?1049l";
@@ -807,6 +890,10 @@ bool MenuController::runMainMenu() {
                         exit(0);
                 }
                 
+                // Восстанавливаем глобальный указатель после подменю
+                globalMenuController = this;
+                
+                // Обновляем состояние сохраненной игры
                 file.open(SAVE_FILE, std::ios::binary);
                 _hasSavedGame = file.good();
                 file.close();
@@ -816,6 +903,8 @@ bool MenuController::runMainMenu() {
                 } else {
                     menuItems[2] = "Load Saved Game";
                 }
+                
+                displayMenuItems(menuItems, selectedIndex);
             }
             else if (input == 'q' || input == 27) {
                 std::cout << "\033[?1049l";
@@ -825,9 +914,11 @@ bool MenuController::runMainMenu() {
             }
         }
     }
+    
     signal(SIGINT, SIG_DFL);
     std::cout << "\033[?1049l";
     system("clear");
+    globalMenuController = nullptr;
     return false;
 }
 

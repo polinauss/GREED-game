@@ -45,6 +45,13 @@ private:
     const std::string LEADERBOARD_FILE = "leaderboard.txt";
     bool _hasSavedGame;
     int _lastSelectedOption;
+    
+    // Добавлено: состояние для перерисовки
+    int _currentSelectedIndex;
+    std::vector<std::string> _currentMenuItems;
+    
+    // Добавлено: статический указатель для обработчика сигналов
+    static MenuController* globalMenuController;
 
 public:
     MenuController();
@@ -63,12 +70,22 @@ public:
     void addToLeaderboard(int score);
     const std::string& getPlayerName() const { return _playerName; }
     bool hasSavedGame() const { return _hasSavedGame; }
+    
+    // Добавлено: метод для перерисовки меню
+    void refreshMenu();
 
 private:
     void drawAsciiTitle();
     void displayMenuItems(const std::vector<std::string>& items, int selectedIndex);
     void loadLeaderboard();
     void saveLeaderboard();
+    
+    // Добавлено: статический обработчик сигнала
+    static void handleResize(int sig);
+    
+    // Добавлено: проверка минимального размера
+    bool checkTerminalSize() const;
+    void displaySizeError() const;
 };
 
 #endif
