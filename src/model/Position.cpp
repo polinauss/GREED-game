@@ -1,4 +1,4 @@
-#include "model/Position.h"
+#include "model/Position.hpp"
 #include <iostream>
 
 Position::Position(int x, int y): _x(x), _y(y) {}

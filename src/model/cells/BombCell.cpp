@@ -1,6 +1,6 @@
-#include "model/cells/BombCell.h"
-#include "interfaces/ICellInteractionVisitor.h"
-#include "interfaces/ICellRenderVisitor.h"
+#include "model/cells/BombCell.hpp"
+#include "interfaces/ICellInteractionVisitor.hpp"
+#include "interfaces/ICellRenderVisitor.hpp"
 
 BombCell::BombCell(): _isAvailable(true) {};
 

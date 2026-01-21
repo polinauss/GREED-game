@@ -1,6 +1,6 @@
-#include "model/cells/BasicCell.h"
-#include "interfaces/ICellInteractionVisitor.h"
-#include "interfaces/ICellRenderVisitor.h"
+#include "model/cells/BasicCell.hpp"
+#include "interfaces/ICellInteractionVisitor.hpp"
+#include "interfaces/ICellRenderVisitor.hpp"
 
 BasicCell::BasicCell(int value, Color color): _value(value), _color(color), _isAvailable(true) {};
 

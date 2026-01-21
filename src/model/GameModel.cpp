@@ -1,4 +1,4 @@
-#include "model/GameModel.h"
+#include "model/GameModel.hpp"
 #include <iostream>
 #include <ctime>
 #include <cstdlib>

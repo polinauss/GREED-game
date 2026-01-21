@@ -1,6 +1,6 @@
-#include "model/cells/TeleportCell.h"
-#include "interfaces/ICellInteractionVisitor.h"
-#include "interfaces/ICellRenderVisitor.h"
+#include "model/cells/TeleportCell.hpp"
+#include "interfaces/ICellInteractionVisitor.hpp"
+#include "interfaces/ICellRenderVisitor.hpp"
 
 TeleportCell::TeleportCell(Position teleportPos): _teleportPos(teleportPos), _tpAvailable(true) {}; 
 

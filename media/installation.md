@@ -5,10 +5,11 @@
 # Clone the repository
 git clone https://github.com/polinauss/GREED-game.git
 cd GREED-game
-
-# Start special-made sctipr
-chmod +x script.sh && ./script.sh
-
+# Create build directory
+mkdir build && cd build
+# Build project
+cmake ../
+make
 # Run the game
 make run
 ```

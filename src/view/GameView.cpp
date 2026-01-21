@@ -1,6 +1,6 @@
-#include "view/GameView.h"
-#include "model/GameModel.h"
-#include "core/Directions.h"
+#include "view/GameView.hpp"
+#include "model/GameModel.hpp"
+#include "core/Directions.hpp"
 #include <iostream>
 #include <iomanip>
 #include <signal.h>

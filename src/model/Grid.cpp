@@ -1,7 +1,7 @@
-#include "model/Grid.h"
-#include "model/cells/BasicCell.h"
-#include "model/cells/TeleportCell.h"
-#include "model/cells/BombCell.h"
+#include "model/Grid.hpp"
+#include "model/cells/BasicCell.hpp"
+#include "model/cells/TeleportCell.hpp"
+#include "model/cells/BombCell.hpp"
 #include <iostream>
 #include <ctime>
 #include <cstdlib>

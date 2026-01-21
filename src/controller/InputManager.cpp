@@ -1,4 +1,4 @@
-#include "controller/InputManager.h"
+#include "controller/InputManager.hpp"
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/select.h>

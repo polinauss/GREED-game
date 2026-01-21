@@ -1,4 +1,4 @@
-#include "model/Player.h"
+#include "model/Player.hpp"
 #include <iostream>
 
 Player::Player(Position startPosition): _position(startPosition) {}

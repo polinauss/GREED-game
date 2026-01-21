@@ -4,10 +4,10 @@
 #include <csignal>
 #include <unistd.h>
 #include <termios.h>
-#include "model/GameModel.h"
-#include "view/GameView.h"
-#include "controller/GameController.h"
-#include "controller/MenuController.h"
+#include "model/GameModel.hpp"
+#include "view/GameView.hpp"
+#include "controller/GameController.hpp"
+#include "controller/MenuController.hpp"
 #include <cstddef>
 
 struct termios originalTermios;

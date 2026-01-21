@@ -1,4 +1,4 @@
-#include "view/Settings.h"
+#include "view/Settings.hpp"
 #include <unistd.h>
 #include <sys/ioctl.h>
 

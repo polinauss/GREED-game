@@ -1,5 +1,5 @@
-#include "controller/MenuController.h"
-#include "controller/InputHandler.h"
+#include "controller/MenuController.hpp"
+#include "controller/InputHandler.hpp"
 #include <iostream>
 #include <unistd.h>
 #include <ctime>

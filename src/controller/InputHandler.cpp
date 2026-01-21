@@ -1,4 +1,4 @@
-#include "controller/InputHandler.h"
+#include "controller/InputHandler.hpp"
 #include <unistd.h>
 #include <cstdio>
 

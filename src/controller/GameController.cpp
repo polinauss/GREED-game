@@ -1,4 +1,4 @@
-#include "controller/GameController.h"
+#include "controller/GameController.hpp"
 #include <unistd.h>
 #include <iostream>
 #include <termios.h>

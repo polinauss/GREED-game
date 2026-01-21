@@ -1,4 +1,4 @@
-#include "view/ConsoleRenderer.h"
+#include "view/ConsoleRenderer.hpp"
 #include <iostream>
 #include <unistd.h>
 #include <set>

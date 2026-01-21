@@ -1,5 +1,5 @@
-#include "model/InteractionHandler.h"
-#include "model/GameModel.h"
+#include "model/InteractionHandler.hpp"
+#include "model/GameModel.hpp"
 #include <cstdlib>
 
 #define FALSE 0
