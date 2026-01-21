@@ -1,323 +1,332 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Greed Game - Colorful Number Jumping Adventure</title>
+    <title>Greed Game - Console Strategy Arcade</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Основные стили */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #0a192f;
+            color: #e6f1ff;
             line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
             padding: 20px;
-        }
-
-        .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: white;
+        }
+        
+        .container {
+            background-color: #112240;
             border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        /* Шапка */
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
             padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #233554;
+            margin-top: 20px;
+        }
+        
+        header {
             text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #64ffda;
         }
-
-        .header h1 {
-            font-size: 2.5em;
+        
+        h1 {
+            color: #64ffda;
+            font-size: 3.5rem;
             margin-bottom: 10px;
+            letter-spacing: 2px;
         }
-
-        .header .subtitle {
-            font-size: 1.1em;
-            opacity: 0.9;
-            margin-bottom: 20px;
+        
+        .subtitle {
+            color: #a8b2d1;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
         }
-
+        
         .badges {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
             flex-wrap: wrap;
+            gap: 15px;
+            margin: 25px 0;
         }
-
+        
         .badge {
             display: inline-block;
-            padding: 6px 12px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 15px;
-            font-size: 0.85em;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-decoration: none;
+            transition: transform 0.3s;
         }
-
-        /* Основной контент */
-        .content {
-            padding: 30px;
+        
+        .badge:hover {
+            transform: translateY(-3px);
         }
-
-        .section {
-            margin: 30px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-        }
-
-        h2 {
-            color: #667eea;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        h3 {
-            color: #764ba2;
-            margin: 20px 0 10px 0;
-        }
-
-        /* Код */
-        pre {
-            background: #2d2d2d;
-            color: #f8f8f2;
-            padding: 15px;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 15px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 0.95em;
-        }
-
-        code {
-            background: #f1f3f5;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-        }
-
-        /* Таблицы */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        table th, table td {
-            border: 1px solid #dee2e6;
-            padding: 10px;
-            text-align: left;
-        }
-
-        table th {
-            background: #667eea;
+        
+        .badge-cpp {
+            background-color: #00599c;
             color: white;
         }
-
-        table tr:nth-child(even) {
-            background: #f8f9fa;
+        
+        .badge-platform {
+            background-color: #6c757d;
+            color: white;
         }
-
-        /* Списки */
-        ul, ol {
-            margin-left: 20px;
+        
+        .badge-cmake {
+            background-color: #0d6e3e;
+            color: white;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        h2 {
+            color: #64ffda;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #233554;
+        }
+        
+        p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #a8b2d1;
+        }
+        
+        .highlight {
+            color: #64ffda;
+            font-weight: bold;
+        }
+        
+        .video-demo {
+            text-align: center;
+            margin: 40px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.7);
+        }
+        
+        .video-demo img {
+            max-width: 100%;
+            border-radius: 10px;
+            border: 2px solid #64ffda;
+        }
+        
+        .instructions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .instruction-card {
+            background-color: #0a192f;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #64ffda;
+            transition: transform 0.3s;
+        }
+        
+        .instruction-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .instruction-card h3 {
+            color: #64ffda;
             margin-bottom: 15px;
+            font-size: 1.5rem;
         }
-
-        li {
-            margin: 8px 0;
+        
+        .instruction-card ul {
+            padding-left: 20px;
         }
-
-        /* Кнопки */
-        .buttons {
-            display: flex;
-            gap: 15px;
-            margin: 20px 0;
-            flex-wrap: wrap;
+        
+        .instruction-card li {
+            margin-bottom: 10px;
+            color: #a8b2d1;
         }
-
-        .btn {
+        
+        .prerequisites {
+            background-color: #0a192f;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #233554;
+        }
+        
+        .prerequisites ul {
+            padding-left: 20px;
+            margin-top: 15px;
+        }
+        
+        .prerequisites li {
+            margin-bottom: 12px;
+            color: #a8b2d1;
+            font-size: 1.05rem;
+        }
+        
+        .prerequisites li i {
+            color: #64ffda;
+            margin-right: 10px;
+        }
+        
+        .github-link {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #233554;
+        }
+        
+        .btn-github {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: #667eea;
+            gap: 10px;
+            background-color: #24292e;
             color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
             text-decoration: none;
-            border-radius: 6px;
             font-weight: bold;
+            font-size: 1.2rem;
             transition: all 0.3s;
         }
-
-        .btn:hover {
-            background: #764ba2;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        
+        .btn-github:hover {
+            background-color: #444d56;
+            transform: translateY(-3px);
         }
-
-        /* Футер */
-        .footer {
+        
+        footer {
             text-align: center;
-            padding: 20px;
-            background: #f8f9fa;
-            color: #666;
-            border-top: 1px solid #dee2e6;
+            margin-top: 50px;
+            padding-top: 20px;
+            color: #495670;
+            font-size: 0.9rem;
+            border-top: 1px solid #233554;
         }
-
-        /* Адаптивность */
+        
         @media (max-width: 768px) {
-            .header {
-                padding: 25px;
+            body {
+                padding: 10px;
             }
             
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .content {
+            .container {
                 padding: 20px;
             }
             
-            .buttons {
-                flex-direction: column;
+            h1 {
+                font-size: 2.5rem;
             }
             
-            .btn {
-                justify-content: center;
+            h2 {
+                font-size: 1.8rem;
+            }
+            
+            .instructions {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎮 Greed Game</h1>
-            <div class="subtitle">Colorful Number Jumping Adventure</div>
+        <header>
+            <h1>Greed Game</h1>
+            <div class="subtitle">Console-based strategic arcade game</div>
             
             <div class="badges">
-                <span class="badge">C++17</span>
-                <span class="badge">Console Game</span>
-                <span class="badge">Linux/Unix</span>
-                <span class="badge">MIT License</span>
+                <a href="https://en.cppreference.com/w/cpp/17" class="badge badge-cpp">C++ 17</a>
+                <a href="https://en.wikipedia.org/wiki/Linux" class="badge badge-platform">Linux/Unix</a>
+                <a href="https://cmake.org/" class="badge badge-cmake">CMake 3.12+</a>
             </div>
-            
-            <div class="buttons">
-                <a href="https://github.com/YOUR_USERNAME/greed-game" target="_blank" class="btn">
-                    📁 View on GitHub
-                </a>
-                <a href="./docs/html/index.html" class="btn">
-                    📚 View Documentation
-                </a>
-            </div>
-        </div>
+        </header>
         
-        <div class="content">
-            <div class="section">
-                <h2>📋 About the Game</h2>
-                <p><strong>Greed</strong> is a console-based strategic game where players navigate a colorful grid, jumping on numbered cells to accumulate points while avoiding bombs and using teleporters for tactical movement.</p>
+        <section class="section">
+            <h2>Description</h2>
+            <p><span class="highlight">Greed</span> is a console-based strategic arcade game developed as a C++ programming practice project. The game challenges players to navigate a colorful grid, jumping on numbered cells to accumulate points while strategically avoiding bombs and utilizing teleporters for tactical movement.</p>
+        </section>
+        
+        <section class="section">
+            <h2>Video Demonstration</h2>
+            <div class="video-demo">
+                <img src='https://github.com/polinauss/GREED-game/blob/main/media/GAME.gif' alt="Greed Game Demo GIF"/>
             </div>
-            
-            <div class="section">
-                <h2>🚀 Quick Start</h2>
-                <h3>Requirements:</h3>
-                <ul>
-                    <li><strong>C++17 Compiler</strong> (g++ 7+ or clang++)</li>
-                    <li><strong>CMake 3.12+</strong></li>
-                    <li><strong>Linux/Unix terminal</strong> with ANSI color support</li>
-                </ul>
+        </section>
+        
+        <section class="section">
+            <h2>Instructions for interaction with project</h2>
+            <div class="instructions">
+                <div class="instruction-card">
+                    <h3><i class="fas fa-bars"></i> Menu</h3>
+                    <p>Learn how to navigate the game interface:</p>
+                    <ul>
+                        <li>Start New Game</li>
+                        <li>View High Scores</li>
+                        <li>Game Settings</li>
+                        <li>Exit Game</li>
+                    </ul>
+                </div>
                 
-                <h3>Installation:</h3>
-                <pre><code># Clone repository
-git clone https://github.com/polinauss/GREED-game.git
-cd greed-game
-
-# Build with CMake
-mkdir build && cd build
-cmake .. && make
-
-# Run the game
-./greed_game</code></pre>
-            </div>
-            
-            <div class="section">
-                <h2>🎮 Gameplay</h2>
-                <h3>Controls:</h3>
-                <table>
-                    <tr><th>Key</th><th>Action</th></tr>
-                    <tr><td><code>W / ↑</code></td><td>Move Up</td></tr>
-                    <tr><td><code>A / ←</code></td><td>Move Left</td></tr>
-                    <tr><td><code>S / ↓</code></td><td>Move Down</td></tr>
-                    <tr><td><code>D / →</code></td><td>Move Right</td></tr>
-                    <tr><td><code>P</code></td><td>Pause Game</td></tr>
-                    <tr><td><code>S</code></td><td>Save Game</td></tr>
-                    <tr><td><code>M</code></td><td>Main Menu</td></tr>
-                    <tr><td><code>ESC</code></td><td>Exit Game</td></tr>
-                </table>
+                <div class="instruction-card">
+                    <h3><i class="fas fa-gamepad"></i> Game Process & Rules</h3>
+                    <p>Master the gameplay mechanics:</p>
+                    <ul>
+                        <li>Movement controls</li>
+                        <li>Scoring system</li>
+                        <li>Bomb avoidance</li>
+                        <li>Teleporter usage</li>
+                        <li>Win/lose conditions</li>
+                    </ul>
+                </div>
                 
-                <h3>Cell Types:</h3>
-                <table>
-                    <tr><th>Cell</th><th>Color</th><th>Value</th><th>Effect</th></tr>
-                    <tr><td><code>1</code></td><td>🔴 Red</td><td>1 point</td><td>Jump 1 cell</td></tr>
-                    <tr><td><code>2</code></td><td>🟢 Green</td><td>2 points</td><td>Jump 2 cells</td></tr>
-                    <tr><td><code>3</code></td><td>🔵 Blue</td><td>3 points</td><td>Jump 3 cells</td></tr>
-                    <tr><td><code>4</code></td><td>🟡 Yellow</td><td>4 points</td><td>Jump 4 cells</td></tr>
-                    <tr><td><code>5</code></td><td>🟣 Purple</td><td>5 points</td><td>Jump 5 cells</td></tr>
-                    <tr><td><code>B</code></td><td>💣 Bomb</td><td>-20% -9</td><td>Deducts points</td></tr>
-                    <tr><td><code>T</code></td><td>🌀 Teleport</td><td>0</td><td>Random teleport</td></tr>
-                </table>
-            </div>
-            
-            <div class="section">
-                <h2> Project Structure</h2>
-                <pre><code>greed-game/
-├── src/              # Source code
-├── include/          # Header files
-├── docs/            # Documentation
-├── CMakeLists.txt   # CMake configuration
-├── Doxyfile         # Documentation config
-├── index.html       # This file
-└── README.md        # Project README</code></pre>
-            </div>
-            
-            <div class="section">
-                <h2>📚 Documentation</h2>
-                <p>Generate documentation with Doxygen:</p>
-                <pre><code># Install Doxygen and Graphviz
-sudo apt install doxygen graphviz
-
-# Generate documentation
-doxygen Doxyfile
-
-# Open documentation
-xdg-open docs/html/index.html</code></pre>
-                
-                <div class="buttons">
-                    <a href="./docs/html/index.html" class="btn">
-                        📖 View Generated Docs
-                    </a>
+                <div class="instruction-card">
+                    <h3><i class="fas fa-download"></i> Installation</h3>
+                    <p>Get the game running on your system:</p>
+                    <ul>
+                        <li>Clone the repository</li>
+                        <li>Build with CMake</li>
+                        <li>Run the executable</li>
+                        <li>Troubleshooting tips</li>
+                    </ul>
                 </div>
             </div>
+        </section>
+        
+        <section class="section">
+            <h2>Prerequisites</h2>
+            <div class="prerequisites">
+                <p>Ensure your system meets the following requirements:</p>
+                <ul>
+                    <li><i class="fas fa-code"></i> <strong>C++17 Compiler</strong> (g++ 7.0+ or clang++ 5.0+ recommended)</li>
+                    <li><i class="fas fa-cog"></i> <strong>CMake 3.12+</strong></li>
+                    <li><i class="fas fa-hammer"></i> <strong>Make</strong> (GNU Make 3.81+)</li>
+                    <li><i class="fas fa-terminal"></i> <strong>Linux/Unix Terminal</strong> with ANSI color support</li>
+                    <li><i class="fas fa-expand-alt"></i> <strong>Minimum Terminal Size</strong>: 80 columns × 30 rows</li>
+                </ul>
+            </div>
+        </section>
+        
+        <div class="github-link">
+            <a href="https://github.com/polinauss/GREED-game" class="btn-github" target="_blank">
+                <i class="fab fa-github"></i> View on GitHub
+            </a>
         </div>
         
-        <div class="footer">
-            <p>© 2024 Greed Game Project | MIT License</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">
-                Replace <code>polinauss and alexeyphov</code> with your actual GitHub username
-            </p>
-        </div>
+        <footer>
+            <p>Greed Game Project &copy; 2023 | C++ Console Game</p>
+        </footer>
     </div>
 </body>
 </html>
